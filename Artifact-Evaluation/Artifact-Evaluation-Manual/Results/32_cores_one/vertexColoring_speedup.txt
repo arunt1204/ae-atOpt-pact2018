@@ -1,0 +1,66 @@
+KERNEL: vertexColoring.x10
+Speedup of IMSuite Benchmark kernel vertexColoring.x10 on two node systems
+ 
+C2:
+PLACE=2
+THREADS=16
+----------
+Base x10 compiler:
+Execution time: 1087791817
+ 
+AT-Opt x10 compiler:
+Execution time: 33873840
+ 
+Obtained Speedup (C2) = 1087791817 / 33873840 = 32.11 times
+ 
+C4:
+PLACE=4
+THREADS=8
+----------
+Base x10 compiler:
+Execution time: 1119463690
+ 
+AT-Opt x10 compiler:
+Execution time: 33028565
+ 
+Obtained Speedup (C4) = 1119463690 / 33028565 = 33.89 times
+ 
+C8:
+PLACE=8
+THREADS=4
+----------
+Base x10 compiler:
+Execution time: 1086583059
+ 
+AT-Opt x10 compiler:
+Execution time: 28700982
+ 
+Obtained Speedup (C8) = 1086583059 / 28700982 = 37.85 times
+ 
+C16:
+PLACE=16
+THREADS=2
+----------
+Base x10 compiler:
+Execution time: 1085588796
+ 
+AT-Opt x10 compiler:
+Execution time: 34623175
+ 
+Obtained Speedup (C16) = 1085588796 / 34623175 = 31.35 times
+ 
+C32:
+PLACE=32
+THREADS=1
+----------
+Base x10 compiler:
+Execution time: 1112107604
+ 
+AT-Opt x10 compiler:
+Execution time: 29514984
+ 
+Obtained Speedup (C32) = 1112107604 / 29514984 = 37.67 times
+ 
+ 
+-----------------------------------------------------------------------------------------------
+ 

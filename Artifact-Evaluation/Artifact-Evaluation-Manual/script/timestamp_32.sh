@@ -13,7 +13,7 @@ if [ $# -eq 4 ]; then
 	echo "execution time of IMSuite Benchmark kernel $KERNEL.x10 on two node systems"
 	host1=$2
 	host2=$3
-	PATH_FOLDER=$4
+	PATH_FOLDER=$3
 	echo "$host1" > hostnames.txt
 	echo "$host2" >> hostnames.txt
 fi
@@ -21,7 +21,7 @@ fi
 if [ $# -eq 3 ]; then
 	echo "execution of IMSuite Benchmark kernel $KERNEL.x10 on a system"
 	host1=$2
-	PATH_FOLDER=$4
+	PATH_FOLDER=$3
 	echo "$host1" > hostnames.txt
 fi
 
