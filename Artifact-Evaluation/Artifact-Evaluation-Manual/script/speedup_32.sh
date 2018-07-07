@@ -9,7 +9,7 @@ PATH_FOLDER="test"
 echo "KERNEL: $KERNEL.x10"
 
 if [ $# -eq 4 ]; then
-	echo "Speedup of IMSuite Benchmark kernel $KERNEL.x10 on two node systems"
+	echo "Speedup of IMSuite Benchmark kernel $KERNEL.x10 on two node system"
 	host1=$2
 	host2=$3
 	PATH_FOLDER=$4
@@ -24,10 +24,41 @@ if [ $# -eq 3 ]; then
 	echo "$host1" > hostnames.txt
 fi
 
+#not part of computation
+FIGURE_NAME=""
+if [ "$KERNEL" = "dijkstraRouting" ]; then
+	FIGURE_NAME="DR-256"
+elif [ "$KERNEL" = "vertexColoring" ]; then
+	FIGURE_NAME="VC-256"
+elif [ "$KERNEL" = "byzantine" ]; then
+	FIGURE_NAME="BY-128"
+elif [ "$KERNEL" = "leader_elect_hs" ]; then
+	FIGURE_NAME="HS-256"
+elif [ "$KERNEL" = "leader_elect_lcr" ]; then
+	FIGURE_NAME="LCR-256"
+elif [ "$KERNEL" = "bfsBellmanFord" ]; then
+	FIGURE_NAME="BF-256"
+elif [ "$KERNEL" = "bfsDijkstra" ]; then
+	FIGURE_NAME="DST-256"
+elif [ "$KERNEL" = "dominatingSet" ]; then
+	FIGURE_NAME="DS-256"
+elif [ "$KERNEL" = "kcommitte" ]; then
+	FIGURE_NAME="KC-256"
+elif [ "$KERNEL" = "leader_elect_dp" ]; then
+	FIGURE_NAME="DP-256"
+elif [ "$KERNEL" = "vertexColoring" ]; then
+	FIGURE_NAME="LCR-256"
+elif [ "$KERNEL" = "mis" ]; then
+	FIGURE_NAME="MIS-256"
+elif [ "$KERNEL" = "mst" ]; then
+	FIGURE_NAME="MST-256"
+fi
+
+
+
 scp ./hostnames.txt ./x10-base/x10.dist/bin/
 scp ./hostnames.txt ./x10-atOpt/x10.dist/bin/
 rm hostnames.txt
-
 
 #compiling part
 KERNEL_FILE=$KERNEL".x10"
@@ -87,7 +118,7 @@ do
 	echo " "
 
 	SPEEDUP=$( echo "scale=2;$BASE_TIME / $AT_OPT_TIME" | bc )
-	echo "Obtained Speedup (C$x) = $BASE_TIME / $AT_OPT_TIME = $SPEEDUP times"
+	echo "Obtained Speedup (C$x) for $FIGURE_NAME = $BASE_TIME / $AT_OPT_TIME = $SPEEDUP times"
 	echo " "
 done
 

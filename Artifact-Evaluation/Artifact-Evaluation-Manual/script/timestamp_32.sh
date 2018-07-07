@@ -9,8 +9,40 @@ PATH_FOLDER="test"
 
 echo "KERNEL: $KERNEL.x10"
 
+#not part of computation
+FIGURE_NAME=""
+if [ "$KERNEL" = "dijkstraRouting" ]; then
+	FIGURE_NAME="DR-256"
+elif [ "$KERNEL" = "vertexColoring" ]; then
+	FIGURE_NAME="VC-256"
+elif [ "$KERNEL" = "byzantine" ]; then
+	FIGURE_NAME="BY-128"
+elif [ "$KERNEL" = "leader_elect_hs" ]; then
+	FIGURE_NAME="HS-256"
+elif [ "$KERNEL" = "leader_elect_lcr" ]; then
+	FIGURE_NAME="LCR-256"
+elif [ "$KERNEL" = "bfsBellmanFord" ]; then
+	FIGURE_NAME="BF-256"
+elif [ "$KERNEL" = "bfsDijkstra" ]; then
+	FIGURE_NAME="DST-256"
+elif [ "$KERNEL" = "dominatingSet" ]; then
+	FIGURE_NAME="DS-256"
+elif [ "$KERNEL" = "kcommitte" ]; then
+	FIGURE_NAME="KC-256"
+elif [ "$KERNEL" = "leader_elect_dp" ]; then
+	FIGURE_NAME="DP-256"
+elif [ "$KERNEL" = "vertexColoring" ]; then
+	FIGURE_NAME="LCR-256"
+elif [ "$KERNEL" = "mis" ]; then
+	FIGURE_NAME="MIS-256"
+elif [ "$KERNEL" = "mst" ]; then
+	FIGURE_NAME="MST-256"
+fi
+
+
+
 if [ $# -eq 4 ]; then
-	echo "execution time of IMSuite Benchmark kernel $KERNEL.x10 on two node systems"
+	echo "execution time of IMSuite Benchmark kernel $KERNEL.x10 ($FIGURE_NAME) on two node systems"
 	host1=$2
 	host2=$3
 	PATH_FOLDER=$4
@@ -19,7 +51,7 @@ if [ $# -eq 4 ]; then
 fi
 
 if [ $# -eq 3 ]; then
-	echo "execution of IMSuite Benchmark kernel $KERNEL.x10 on a system"
+	echo "execution of IMSuite Benchmark kernel $KERNEL.x10 ($FIGURE_NAME) on a system"
 	host1=$2
 	PATH_FOLDER=$3
 	echo "$host1" > hostnames.txt
