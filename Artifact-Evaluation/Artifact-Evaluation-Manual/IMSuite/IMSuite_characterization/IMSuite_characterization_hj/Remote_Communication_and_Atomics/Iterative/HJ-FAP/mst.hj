@@ -1,0 +1,698 @@
+/* This file is part of IMSuite Benchamark Suite.
+ * 
+ * This file is licensed to You under the Eclipse Public License (EPL);
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * (C) Copyright IMSuite 2013-present.
+ */
+
+import java.io.*;
+import java.util.*;
+
+/** 
+ * mst aims to find a minimum spanning tree from a given graph 
+ * consisting of a set of nodes and edges.
+ * The main intuition behind the algorithm is selection of a 
+ * blue edge (minimum weighted edge joining a fragment with 
+ * another fragment).
+ *
+ * @author Suyash Gupta
+ * @author V Krishna Nandivada
+ */
+public class mst
+{
+	/** Signals to indicate. */
+        final int START = 0;
+        final int JOIN = 1;
+        final int CHANGE = 2;
+        
+        int adj_graph[][], weightMatrix[][], nodes, Infinity  = Integer.MAX_VALUE;
+        
+        /** Parameters to enable execution with load */
+	long loadValue=0, nval[];
+	
+	/** Abstract node representation */
+        node nodeSet[];
+
+	/** Counter for measuring total atomic. */
+        int ciso[];
+
+	/** 
+	 * Acts as the starting point for the program execution. 
+	 * <code>main</code> performs the task of accepting the input 
+	 * from the user specified file, creaton of MST, printing 
+	 * the output and validating the result.
+	 *
+	 * @param args 		array of runtime arguments.
+	 * @throws Exception	if File handling operation illegal. 
+	 */
+        public static void main(String []args) throws Exception {
+                String inputFile="inputmst16.txt", outputFile="outputmst.txt";
+                int i,j;
+                boolean flag = false, loadCompute=false;
+
+		mst ms = new mst();
+                for(i=0; i<args.length; i++) {
+			if(args[i].equals("-ver") || args[i].equals("-verify"))
+				flag = true;
+			else if(args[i].equals("-in")) {
+				inputFile = args[i+1];
+				i++;
+			}	
+			else if(args[i].equals("-out")) {
+				outputFile = args[i+1];
+				i++;
+			}
+			else if(args[i].equals("-lfon")) {
+				ms.loadValue = Long.parseLong(args[i+1]);
+				i++;
+			}
+			else
+				System.out.println("Wrong option specified");		
+		}
+
+                FileReader fr = new FileReader(inputFile);
+                BufferedReader br = new BufferedReader(fr);
+                String s = br.readLine();
+                ms.nodes = Integer.parseInt(s);
+                ms.adj_graph = new int[ms.nodes][ms.nodes];
+                ms.weightMatrix = new int[ms.nodes][ms.nodes];
+                ms.nodeSet = new node[ms.nodes];
+		ms.nval  = new long[ms.nodes];                
+
+		ms.ciso = new int[ms.nodes];
+
+                j=0;
+                while(!((s = br.readLine()).equals(" "))) {
+                        for(i=0; i<s.length(); i++)
+                                ms.adj_graph[j][i] = Character.digit(s.charAt(i), 10);
+                        j++;
+                }
+
+                j=0;
+                while(j<ms.nodes) {
+                        i=0;
+                        while(i<ms.nodes) {
+                                s = br.readLine();
+                                ms.weightMatrix[j][i] = Integer.parseInt(s);
+                                i++;
+                        }
+                        j++;
+                }
+                
+		ms.initialize();
+			
+		int count = 0;
+		outer: while(true) {
+			ms.mstCreate(count);
+			count++;
+                       	int frag = ms.nodeSet[0].fragmentRoot;
+                       	for(i=1; i<ms.nodes; i++)
+                        	if(frag != ms.nodeSet[i].fragmentRoot)
+                        		continue outer;
+                       	break;
+		}
+
+		if(ms.loadValue != 0) {
+			double sumval=0;
+                        for(i=0; i<ms.nodes; i++)
+                                sumval = sumval + ms.nval[i];
+
+			if(sumval > 0)
+                                System.out.println();
+		}
+
+		ms.isolatedCount();                        
+        }
+
+	void isolatedCount() {
+                int isum=0; 
+                for(int i=0; i<nodes; i++) 
+                        isum = isum + ciso[i];
+                System.out.println(isum);       
+        }
+        
+	/** Initializes all the fields of the abstract node. */	
+        void initialize() {
+        	finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					nodeSet[i] = new node();
+                	        	nodeSet[i].parent = Infinity;
+                	        	nodeSet[i].fragmentRoot = i;
+                	        	nodeSet[i].startSignal = START;
+                	        	nodeSet[i].tempStartSignal = START;
+                	        	nodeSet[i].tempChangeSignal = -1;
+                	        	nodeSet[i].changeChild=-1;
+                	        }	
+			}
+		}	                        
+        }
+        
+        /**
+	 * Aims to busy the threads by introducing the no-op instructions
+	 * equivalent to the amount of load specified.
+	 *
+	 * @param  weight	Specifies the current load value for a thread.
+	 * @return 		Updated load value.
+	 */	
+	long loadweight(long weight) {
+                long j=0;
+                for(long i=0; i<loadValue; i++)
+                        j++;
+                return j+weight;
+        }
+
+	/** Generates a minimum spanning tree. */
+        void mstCreate(int phase) {
+                int i, counter=0;
+                boolean again = false;
+                boolean flag[] = new boolean[nodes];
+                
+                finish {
+                	for(i=0; i<nodes; i++) {
+	              		async {
+                			if(i == nodeSet[i].fragmentRoot) {
+						nodeSet[i].startSignal = START;
+						flag[i] = true;
+					}
+
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+				}
+			}
+		}
+						
+		for(i=0; i<nodes; i++)
+			if(flag[i])
+				counter++;
+		do {
+                	again = setChildSignal();
+		}while(again);
+		findNode(counter);	
+                
+                finish {
+                	for(i=0; i<nodes; i++) {
+                		async {
+                			if(flag[i]) {
+			                	setSignal(nodeSet[i].pair.u, CHANGE);
+			                	childToRemove(nodeSet[i].pair.u, nodeSet[i].pair.u);
+			                }
+
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+				}       
+			}
+		}
+		
+		for(i=0; i<nodes; i++)
+			nodeSet[i].changeSignal = nodeSet[i].tempChangeSignal;
+		invertPath(counter);			                			
+
+		finish {
+			phaser ph = new phaser();
+			for(i=0; i<nodes; i++) {
+                		async phased(ph) {
+		                	if(nodeSet[i].fragmentRoot == Infinity)
+			                	nodeSet[i].fragmentRoot = i;
+
+					next;
+
+					if(i == nodeSet[i].fragmentRoot)
+						sendJoinSignal(i, nodeSet[i].pair.v);
+				
+					next;
+	
+                			flag[i] = false;		
+					if(nodeSet[i].fragmentRoot == i && nodeSet[i].pair.u == i && getFragmentRoot(nodeSet[i].pair.v) != i)
+						flag[i] = true;
+			
+					next;
+		
+                			if(flag[i])		
+						fragmentAdd(i);
+			
+					next;
+					
+					if(nodeSet[i].fragmentRoot == i)
+						nodeSet[i].trans = true;
+
+					if(loadValue != 0)					
+						nval[i] = loadweight(nval[i]+i);
+				}
+			}
+		}
+		transmit();				
+		
+		finish {
+			for(i=0; i<nodes; i++) {
+	               		async {			
+					nodeSet[i].startSignal = -1;    
+					nodeSet[i].tempStartSignal = -1;
+	                        	nodeSet[i].joinSignal.clear();
+	                        	nodeSet[i].changeChild = -1;
+	                        	nodeSet[i].trans = false;
+	                        	nodeSet[i].tempTrans = false;
+	                        	nodeSet[i].bluePairs.clear();
+	                        	nodeSet[i].tempChangeSignal = -1;
+	                        	
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+	                        }
+			}	                        	
+                }
+        }
+
+	/**
+	 * Signals the children of a node to Start. 
+	 *
+	 * @return 	true if signal has to be transmitted further deep in the tree.
+	 */
+        boolean setChildSignal() {
+        	boolean check[] = new boolean[nodes];
+        	finish {
+			phaser ph = new phaser();
+        		for(int i=0; i<nodes; i++) {
+        			async phased(ph) {
+        				if(nodeSet[i].startSignal == START && nodeSet[i].children.size() > 0) {
+        					nodeSet[i].startSignal = -1;
+        					nodeSet[i].tempStartSignal = -1;
+        					for(int c=0; c<nodeSet[i].children.size(); c++) 
+        						setSignal(nodeSet[i].children.get(c), START);
+        					check[i] = true;	
+        				}	
+    
+					next;
+
+        				nodeSet[i].startSignal = nodeSet[i].tempStartSignal;
+        				
+        				if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+        			}
+        		}
+        	}
+        	
+        	boolean retVal = false;
+        	for(int i=0; i<nodes; i++)
+        		if(check[i])
+        			retVal = true;
+        	return retVal;		
+        }
+        
+        /** 
+         * Performs the task of finding blue edge for the fragment.
+         * 
+         * @param  froots	Root of a fragment.
+         */
+        void findNode(int froots) {
+        	int count = 0;
+        	boolean cagain[] = new boolean[nodes];
+        	boolean check = false;
+        	do {
+        		finish {
+				phaser ph = new phaser();
+        			for(int i=0; i<nodes; i++) {
+        				async phased(ph) {
+        					if(nodeSet[i].startSignal == START) {
+        						if(nodeSet[i].children.size() > 0) {
+								if(nodeSet[i].bluePairs.size() == nodeSet[i].children.size()) {
+									nodeSet[i].pair.u = i; nodeSet[i].pair.v = i;
+									findMinimum(i);
+									
+									blueEdge bdg = new blueEdge();
+									for(int j=0; j<nodeSet[i].bluePairs.size(); j++) {
+										bdg = nodeSet[i].bluePairs.get(j);
+										if(weightMatrix[nodeSet[i].pair.u][nodeSet[i].pair.v] > weightMatrix[bdg.u][bdg.v])
+											nodeSet[i].pair.setPair(bdg.u, bdg.v);
+									}
+									nodeSet[i].startSignal = -1;
+       									nodeSet[i].tempStartSignal = -1;
+									if(i != nodeSet[i].fragmentRoot) {
+										setBlueEdge(nodeSet[i].parent, nodeSet[i].pair.u, nodeSet[i].pair.v);
+        									setSignal(nodeSet[i].parent, START);
+        								}
+        								else	
+        									cagain[i] = true;
+								}        					
+        						}
+        						else {
+								nodeSet[i].pair.u = i; nodeSet[i].pair.v = i;
+        							findMinimum(i);
+        							nodeSet[i].startSignal = -1;
+       								nodeSet[i].tempStartSignal = -1;
+        							if(i != nodeSet[i].fragmentRoot) {
+        								setBlueEdge(nodeSet[i].parent, nodeSet[i].pair.u, nodeSet[i].pair.v);
+        								setSignal(nodeSet[i].parent, START);
+        							}
+        							else
+        								cagain[i] = true;
+        						}
+        					}
+        					
+						next;
+
+        					nodeSet[i].startSignal = nodeSet[i].tempStartSignal;
+        					for(int j=0; j<nodeSet[i].tempPairs.size(); j++)
+        						nodeSet[i].bluePairs.add(nodeSet[i].tempPairs.get(j));
+        					nodeSet[i].tempPairs.clear();
+        					
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+        				}
+        			}
+        		}
+        		
+        		count=0;
+        		check = false;
+        		for(int i=0; i<nodes; i++)
+        			if(cagain[i])
+        				count++;
+        		if(count != froots)
+        			check = true;
+        	}while(check);	
+        }	
+        
+        /** 
+         * Finds the minimum weighted edge having <code>aNode<\code> as
+         * one of the vertices.
+         *
+         * @param  aNode	Node whose minimum weighted edge has to be determined.
+         */
+        void findMinimum(int aNode) {
+                int min = Infinity;
+                for(int i=0; i<nodes; i++)
+                        if(adj_graph[aNode][i] == 1 && getFragmentRoot(i) != nodeSet[aNode].fragmentRoot)
+                                if(min > weightMatrix[aNode][i]) {
+                                        min = weightMatrix[aNode][i];
+                                        nodeSet[aNode].pair.setPair(aNode, i);
+                                }
+        }
+        
+        /**
+         * Adds a blue edge pair for a node.
+         *
+         * @param  aNode	Node which receives a new blue edge pair information.
+         * @param  pu		Source of the pair (or node part of same fragment).
+         * @param  pv		Destination of the pair (or node part of other fragment).
+         */
+        void setBlueEdge(int aNode, int pu, int pv) {
+        	isolated{
+			/** Inside existing atomic operation, increment counter for atomic. */
+			ciso[aNode] = ciso[aNode] + 1;
+
+        		blueEdge bdg = new blueEdge();
+        		bdg.setPair(pu, pv);
+        		nodeSet[aNode].tempPairs.add(bdg);
+        	}
+        }			
+
+	/**
+	 * Performs the task of merging two fragments.
+	 * 
+	 * @param  aNode	Node whose fragment will merge with another fragment.
+	 */	
+        void fragmentAdd(int aNode) {
+        	boolean flag = false;
+        	if(nodeSet[aNode].joinSignal.size() > 0) {
+        		Merge mgr = new Merge();
+        		for(int i=0; i<nodeSet[aNode].joinSignal.size(); i++) {
+        			mgr = nodeSet[aNode].joinSignal.get(i);
+        			if(mgr.v == nodeSet[aNode].pair.v) {
+        				flag = true;
+        				break;
+        			}
+        		}
+        		if(flag) {
+				if(aNode < nodeSet[aNode].pair.v) {
+        				nodeSet[aNode].fragmentRoot = aNode;
+        				addChild(aNode, nodeSet[aNode].pair.v);	
+					setParent(nodeSet[aNode].pair.v, aNode);
+					setFragmentRoot(nodeSet[aNode].pair.v, aNode);
+        			}		        		
+        		}
+        	}
+        	if(!flag) {
+			addChild(nodeSet[aNode].pair.v, aNode);
+			nodeSet[aNode].parent = nodeSet[aNode].pair.v;
+			nodeSet[aNode].fragmentRoot = Infinity;        	
+        	}
+	}
+
+	/** Transmits the root of a fragment to all the other nodes of the fragment. */
+	void transmit() {
+        	boolean cagain[], check; 
+        	do {
+        		cagain = new boolean[nodes];
+        		finish {
+				phaser ph = new phaser();
+        			for(int i=0; i<nodes; i++) {
+        				async phased(ph) {
+        					if(nodeSet[i].trans) {
+        						nodeSet[i].trans = false;
+        						nodeSet[i].tempTrans = false;
+        						if(nodeSet[i].children.size() > 0)
+        							cagain[i] = true;
+        						for(int j=0; j<nodeSet[i].children.size(); j++) {
+	                	       				int child = nodeSet[i].children.get(j);
+	                	       				setFragmentRoot(child, nodeSet[i].fragmentRoot);
+	                	       				setTransFlag(child);
+							}
+        					}
+        					
+						next;
+	
+						nodeSet[i].trans = nodeSet[i].tempTrans;
+
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+        				}
+        			}
+        		}
+        		
+        		check = false;
+        		for(int i=0; i<nodes; i++)
+        			if(cagain[i]) {
+        				check = true;
+        				break;
+        			}
+        	}while(check);		
+        }
+
+	/**
+	 * Inverts the path, that is if the root and source of the pair (u)
+	 * are different then the parent-child relationships on path from
+	 * u to root are reversed.
+	 *
+	 * @param  froots	source of the pair (u).
+	 */
+        void invertPath(int froots){
+        	int count = 0;
+        	boolean cagain[] = new boolean[nodes];
+        	boolean check = false;
+        	do {
+        		finish {
+				phaser ph = new phaser();
+        			for(int i=0; i<nodes; i++) {
+        				async phased(ph) {
+        					if(nodeSet[i].changeSignal == CHANGE) {
+        						nodeSet[i].changeSignal = -1;
+        						nodeSet[i].tempChangeSignal = -1;
+        						
+        						if(i == nodeSet[i].changeChild) {
+        							nodeSet[i].fragmentRoot = Infinity;
+        							if(nodeSet[i].parent != Infinity) {
+                	                				nodeSet[i].children.add(nodeSet[i].parent);
+                	                				setSignal(nodeSet[i].parent, CHANGE);
+                	                				childToRemove(i, nodeSet[i].parent);
+                	                				nodeSet[i].parent = Infinity;
+                	        				}
+                	        				else
+                	        					cagain[i] = true;
+        						}
+        						else
+        						{
+        							nodeSet[i].fragmentRoot = nodeSet[i].changeChild;
+				                                for(int j=nodeSet[i].children.size()-1; j>=0; j--){
+                	                				int child = nodeSet[i].children.get(j);
+									if(child == nodeSet[i].changeChild)
+                	                        				nodeSet[i].children.remove(j);
+								}
+                	                			if(nodeSet[i].parent != Infinity) {
+                	                				setSignal(nodeSet[i].parent, CHANGE);
+                	                        			nodeSet[i].children.add(nodeSet[i].parent);
+									childToRemove(i, nodeSet[i].parent);
+									nodeSet[i].parent = nodeSet[i].changeChild;
+								}
+                	                			else {
+                	                				nodeSet[i].parent = nodeSet[i].changeChild;
+                	                				cagain[i] = true;
+                	                			}	
+								nodeSet[i].changeChild = -1;
+        						}
+        					}
+
+						next;
+
+        					nodeSet[i].changeSignal = nodeSet[i].tempChangeSignal;
+        					
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);;
+        				}
+        			}
+        		}			
+        	
+        		count=0;
+        		check = false;
+        		for(int i=0; i<nodes; i++)
+        			if(cagain[i])
+        				count++;
+        		if(count != froots)
+        			check = true;
+        	}while(check);
+        }
+
+	/**
+	 * Specifies the child to remove from a node. 
+	 * @param  child	node which has to be unmarked as a child.
+	 * @param  parent	node whose child has to be removed.
+	 */          
+        void childToRemove(int child, int parent) {
+        	nodeSet[parent].changeChild = child;
+        }
+
+	/**
+	 * Sets the signal of a node as <code>START<\code> or <code>CHANGE<\code>.
+	 * @param  aNode	node for which signal has to be set
+	 * @param  uSignal	Value of signal.
+	 */
+        void setSignal(int aNode, int uSignal) {
+		if(uSignal == CHANGE)
+			nodeSet[aNode].tempChangeSignal = CHANGE;
+		else {
+			isolated { 
+				/** Inside existing atomic operation, increment counter for atomic. */
+				ciso[aNode] = ciso[aNode] + 1;	
+	
+				nodeSet[aNode].tempStartSignal = START; 
+			}	
+		}	
+        }
+        
+        /**
+	 * Adds a child to the set of children of a node.
+	 * @param  aNode 	node which will get a new child.
+	 * @param  child	node which is assigned a new parent node.
+	 */
+        void addChild(int aNode, int child) {
+        	isolated { 
+			/** Inside existing atomic operation, increment counter for atomic. */
+			ciso[aNode] = ciso[aNode] + 1;
+
+			nodeSet[aNode].children.add(child); 
+		}	
+        }
+
+	/**
+	 * Sets the parent of <code>aNode<\code>.
+	 * @param  aNode 	node which will be assigned to a new parent node.
+	 * @param  Parent	node which is assigned a new child node.
+	 */
+        void setParent(int aNode, int Parent) {
+                nodeSet[aNode].parent = Parent;
+        }
+
+	/**
+	 * Sets the fragment root to <code>root<\code>.
+	 * @param  aNode 	node for which fragment root has to be set.
+	 * @param  root		new fragment root.
+	 */
+        void setFragmentRoot(int aNode, int root) {
+                nodeSet[aNode].fragmentRoot = root;
+        }
+
+	/**
+	 * Provides the fragment root for <code>aNode<\code>.
+	 * @param   aNode 	node whose fragment root is required.
+	 * @return  		fragment root of <code>aNode<\code>.
+	 */
+        int getFragmentRoot(int aNode){
+                return nodeSet[aNode].fragmentRoot;
+        }
+        
+        /**
+	 * Sets the transmit flag.
+	 * @param  child	node whose flag has to be set.
+	 */
+        void setTransFlag(int child) {
+        	nodeSet[child].tempTrans = true;
+        }
+
+	/**
+	 * Transmits the <code>JOIN<\code> signal.
+	 * @param  sender 	sender of the signal.
+	 * @param  receiver	receiver of the signal.
+	 */	
+        void sendJoinSignal(int sender, int receiver) {
+        	isolated {
+			/** Inside existing atomic operation, increment counter for atomic. */
+			ciso[receiver] = ciso[receiver] + 1;
+
+        		Merge mgr = new Merge();
+        		mgr.setData(JOIN, sender);
+                	nodeSet[receiver].joinSignal.add(mgr);
+		}                	
+        }
+}
+
+/** Specifies the structure for sending a merge request. */
+class Merge
+{
+	int join;
+	int v;
+	void setData(int join, int v) {
+		this.join = join;
+		this.v = v;
+	}
+}
+
+/** Specifies the structure for a blue edge pair. */
+class blueEdge
+{
+        int u; int v;
+        void setPair(int u, int v) {
+                this.u = u;
+                this.v = v;
+        }
+}
+
+/**
+ * <code>node</code> specifies the structure for each abstract node,
+ * part of the MST algorithm.
+ */
+class node
+{
+	/** Specifies the fragment root for a node. */
+        int fragmentRoot;
+        
+        /** States the parent of a node. */
+        int parent;
+        
+        int startSignal, tempStartSignal;
+        int changeSignal, tempChangeSignal, changeChild;
+        boolean trans, tempTrans;
+        
+        /** Stores a blue edge pair. */
+        blueEdge pair = new blueEdge();
+        
+        /** Stores the received join signals. */
+        ArrayList<Merge> joinSignal = new ArrayList<Merge>();
+        
+        /** Stores received blue edge pairs. */
+	ArrayList<blueEdge> bluePairs = new ArrayList<blueEdge>();
+	ArrayList<blueEdge> tempPairs = new ArrayList<blueEdge>();	
+ 	
+ 	/** Identifies the children of a node. */
+        ArrayList<Integer> children = new ArrayList<Integer>();
+}

@@ -1,0 +1,300 @@
+/* This file is part of IMSuite Benchamark Suite.
+ * 
+ * This file is licensed to You under the Eclipse Public License (EPL);
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * (C) Copyright IMSuite 2013-present.
+ */
+
+import java.io.*;
+import java.util.*;
+
+/** 
+ * bfsBellmanFord implements the breadth first algorithm using the Bellman Ford
+ * approach. The aim here is to output the distance of every node from the 
+ * root. 
+ *
+ * @author Suyash Gupta
+ * @author V Krishna Nandivada
+ */
+
+public class bfsBellmanFord 
+{
+	int nodes, root, Infinity = Integer.MAX_VALUE, adj_graph[][];
+	int diameter;
+
+	/** Parameters to enable execution with load */
+	long loadValue=0, nval[];
+
+	/** Abstract node representation */
+	Node nodeSet[];
+	
+	/** 
+	 * Acts as the starting point for the program execution. 
+	 * <code>main</code> performs the task of accepting the input from the user 
+	 * specified file, calling the <code>bfsForm</code>, printing the output
+	 * and validating the result.
+	 *
+	 * @param args 		array of runtime arguments.
+	 * @throws Exception	if File handling operation illegal. 
+	 */   
+	public static void main(String []args) throws Exception {
+		String inputFile = "inputbfsBellman16.txt", outputFile = "outputbfsBellman.txt";
+		int i,j;
+		boolean flag = false;
+		
+		bfsBellmanFord bfs = new bfsBellmanFord();
+		for(i=0; i<args.length; i++) {
+			if(args[i].equals("-ver") || args[i].equals("-verify"))
+				flag = true;
+			else if(args[i].equals("-in")) {
+				inputFile = args[i+1];
+				i++;
+			}	
+			else if(args[i].equals("-out")) {
+				outputFile = args[i+1];
+				i++;
+			}
+			else if(args[i].equals("-lfon")) {
+				bfs.loadValue = Long.parseLong(args[i+1]);
+				i++;
+			}
+			else
+				System.out.println("Wrong option specified");		
+		}
+
+		FileReader fr = new FileReader(inputFile);
+		BufferedReader br = new BufferedReader(fr);
+		String s = br.readLine();
+
+		bfs.nodes = Integer.parseInt(s);
+		s = br.readLine();
+		bfs.root = Integer.parseInt(s);
+		bfs.adj_graph = new int[bfs.nodes][bfs.nodes];
+		bfs.nval = new long[bfs.nodes];
+		
+		j=0;
+		while((s = br.readLine()) != null) {
+			for(i=0; i<s.length(); i++)
+				bfs.adj_graph[j][i] = Character.digit(s.charAt(i), 10);
+			j++;
+		}
+		
+		bfs.nodeSet = new Node[bfs.nodes];
+
+		bfs.diameter = bfs.getDiameter();
+		bfs.initialize();
+
+		long startTime = System.nanoTime();
+		bfs.Start();
+		for(i=0; i<bfs.diameter; i++)
+			bfs.bfsForm();
+		long finishTime = System.nanoTime();
+		long estimatedTime = finishTime - startTime;
+		System.out.println("Start Time: " + startTime + "\t Finish Time: " + finishTime + "\t Estimated Time: " + estimatedTime);
+
+		bfs.printOutput(outputFile);
+			
+		if(flag)
+			bfs.outputVerifier();
+
+		if(bfs.loadValue != 0) {
+			double sumval=0;
+			for(i=0; i<bfs.nodes; i++)
+				sumval = sumval + bfs.nval[i];
+
+			if(sumval > 0)
+                                System.out.println();	
+		}
+	}
+	
+	/** Initializes all the fields of the abstract node. */ 
+	void initialize() {
+		for(int i=0; i<nodes; i++) {
+			int j,counter=0;
+			nodeSet[i] = new Node();
+			for(j=0; j<nodes; j++)
+				if(adj_graph[i][j] == 1)
+					counter++;
+					
+			nodeSet[i].neighbors = new int[counter];
+
+			counter=0;
+			for(j=0; j<nodes; j++)
+				if(adj_graph[i][j] == 1) {
+					nodeSet[i].neighbors[counter] = j;
+					counter++;
+				}
+			
+			if(i != root)					
+				nodeSet[i].distance=Infinity;
+			else
+				nodeSet[i].distance=0;
+		}
+	}
+
+	/**
+	 * Aims to busy the threads by introducing the no-op instructions
+	 * equivalent to the amount of load specified.
+	 *
+	 * @param  weight	Specifies the current load value for a thread.
+	 * @return 		Updated load value.
+	 */
+	long loadweight(long weight)
+	{
+		long j=0;
+		for(long i=0; i<loadValue; i++)
+			j++;
+		return j+weight;
+	}
+	
+	/** Marks the start of BFS creation with root setting distance for its neighbors. */
+	void Start()
+	{
+		for(int j=0; j<nodeSet[root].neighbors.length; j++)
+			setDistance(nodeSet[root].neighbors[j], nodeSet[root].distance+1);
+	}
+	
+	/** 
+	 * Performs the task of creating BFS. Each node sends its value of distance from
+	 * the root to all its neighbors. A node updates its distance variable only if it
+	 * receives a value smaller than the existing.
+	 */
+	void bfsForm() {
+		//finish
+			for(int i=0; i<nodes; i++) {
+				//async 
+					nodeSet[i].messageHolder.addAll(nodeSet[i].tempMessageHolder);
+					nodeSet[i].tempMessageHolder.clear();
+					
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+			}
+		
+		//finish 
+			for(int i=0; i<nodes; i++) {
+				//async 
+					int mn = Infinity;
+					for(int j=0; j<nodeSet[i].messageHolder.size(); j++)
+						if(mn > nodeSet[i].messageHolder.get(j))
+							mn = nodeSet[i].messageHolder.get(j);
+					
+					if(mn < nodeSet[i].distance) {
+						nodeSet[i].distance = mn;		
+						for(int j=0; j<nodeSet[i].neighbors.length; j++)
+							setDistance(nodeSet[i].neighbors[j], nodeSet[i].distance+1);		
+					}
+					nodeSet[i].messageHolder.clear();
+					
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+			}
+	}
+	
+	/** 
+	 * Sends the distance value to a neighbor.
+	 *
+	 * @param neighbor	Receiving node.
+	 * @param distance	Value to be sent.
+	 */
+	void setDistance(int neighbor, int distance) {
+		nodeSet[neighbor].tempMessageHolder.add(distance);
+	}
+	
+	/** 
+	 * Writes the output to the user specified file.
+	 * 
+	 * @param  fileName	Name of the file in which output has to be stored.
+	 * @throws 		input output exception if a failure in write occurs.
+	 */
+	void printOutput(String fileName) throws IOException {
+	  	Writer output = null;
+	  	output = new BufferedWriter(new FileWriter(fileName));
+		for(int i=0; i<nodes; i++)
+			output.write("\n Node " + i + " : \t" + "Distance from root: " + nodeSet[i].distance);
+		output.close();
+	}
+	
+	/**
+	 * Calculates the diameter for the graph from the root by selecting the 
+	 * maximum distance of a node from the root.
+	 *
+	 * @return	Value of diameter form the root.
+	 */   
+	int getDiameter() {
+		int distanceMat[] = new int[nodes];
+		distanceMat = getDistance();
+		
+		int diameter=Integer.MIN_VALUE;
+		for(int i=0; i<nodes; i++)
+			if(diameter < distanceMat[i])
+				diameter = distanceMat[i];
+		return diameter;		
+	}
+	
+	/**
+	 * Calculates for each node its distance from the root.
+	 * 
+	 * @return	Set of distances from the root.
+	 */
+	int[] getDistance() {
+		int distanceMat[] = new int[nodes], i=0;
+		boolean flag = false;
+		ArrayList<Integer> queue = new ArrayList<Integer>();
+		for(i=0; i<nodes; i++)
+			distanceMat[i] = Infinity;
+
+		queue.add(root);
+		distanceMat[root] = 0;
+		
+		while(queue.size() > 0) {
+			int anode = queue.get(0);
+			queue.remove(0);
+			
+			for(i=0; i<nodes; i++)
+				if(adj_graph[anode][i] == 1 && distanceMat[i] == Infinity) {
+					distanceMat[i] = distanceMat[anode]+1;
+					queue.add(i);
+				}
+		}
+		return distanceMat;
+	}
+	
+	/** Validates the output resulting from the execution of the algorithm. */
+	void outputVerifier() {
+		int distanceMat[] = new int[nodes], i=0;
+		boolean flag = false;
+		
+		for(i=0; i<nodes; i++)
+			distanceMat[i] = Infinity;
+		
+		ArrayList<Integer> queue = new ArrayList<Integer>();
+		distanceMat = getDistance();
+		
+		for(i=0; i<nodes; i++)
+			if(distanceMat[i] != nodeSet[i].distance)
+				flag = true;
+				
+		if(!flag)
+			System.out.println("Output verified");
+	}
+}
+
+/**
+ * <code>Node</code> specifies the structure for each abstract node
+ * part of the BFS Bellman Ford algorithm.
+ */ 
+class Node
+{
+	/** Tells distance of a node from the root. */
+	int distance;
+
+	/** Tracks all the neighbors of a node.	*/			
+	int neighbors[];
+
+	/** Holds the message sent by the neighbors. */		
+	ArrayList<Integer> messageHolder = new ArrayList<Integer>();
+	ArrayList<Integer> tempMessageHolder = new ArrayList<Integer>();
+}

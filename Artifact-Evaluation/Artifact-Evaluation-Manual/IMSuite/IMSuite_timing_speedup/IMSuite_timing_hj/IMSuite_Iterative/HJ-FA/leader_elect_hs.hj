@@ -1,0 +1,442 @@
+/* This file is part of IMSuite Benchamark Suite.
+ * 
+ * This file is licensed to You under the Eclipse Public License (EPL);
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * (C) Copyright IMSuite 2013-present.
+ */
+
+import java.io.*;
+import java.util.*;
+
+/** 
+ * leader_elect_dp aims to elect a leader from a set of nodes,
+ * on the basis of leader election algorithm by Hirschberg and Sinclair.
+ * The algorithm is aimed towards bidirectional ring networks.
+ *
+ * @author Suyash Gupta
+ * @author V Krishna Nandivada
+ */
+public class leader_elect_hs 
+{
+	int nodes, idSet[];
+	
+	/** Parameters to enable execution with load */
+	long loadValue=0, nval[];
+	
+	/** Abstract node representation */
+	PROCESS nodeSet[]; 
+
+	/** 
+	 * Acts as the starting point for the program execution. 
+	 * <code>main</code> performs the task of accepting the input from the user 
+	 * specified file, electing the leader and transmitting information, 
+	 * printing the output and validating the result.
+	 *
+	 * @param args 		array of runtime arguments.
+	 * @throws Exception	if File handling operation illegal. 
+	 */	
+	public static void main(String []args)	throws Exception {
+		String inputFile = "inputlhs16.txt", outputFile = "outputlhs.txt";
+		boolean flag = false;
+		int j=0, i;
+		
+		leader_elect_hs lhs = new leader_elect_hs(); 
+		for(i=0; i<args.length; i++) {
+			if(args[i].equals("-ver") || args[i].equals("-verify"))
+				flag = true;
+			else if(args[i].equals("-in")) {
+				inputFile = args[i+1];
+				i++;
+			}	
+			else if(args[i].equals("-out")) {
+				outputFile = args[i+1];
+				i++;
+			}
+			else if(args[i].equals("-lfon")) {
+				lhs.loadValue = Long.parseLong(args[i+1]);
+				i++;
+			}
+			else
+				System.out.println("Wrong option spcified");		
+		}		
+
+		FileReader fr = new FileReader(inputFile);
+		BufferedReader br = new BufferedReader(fr);
+		String s = br.readLine();
+		lhs.nodes = Integer.parseInt(s);
+		lhs.idSet = new int[lhs.nodes];
+		lhs.nodeSet = new PROCESS[lhs.nodes];
+		lhs.nval = new long[lhs.nodes];		
+
+		while((s = br.readLine()) != null) {
+			lhs.idSet[j] = Integer.parseInt(s);
+			j++;	
+		}
+		
+		int phases=(int)(Math.log(lhs.nodes)/Math.log(2));
+		lhs.initialize();
+			
+		long startTime = System.nanoTime();
+		for(i=0; i<phases; i++)
+			lhs.elect(i);
+		lhs.transmit(phases);
+		long finishTime = System.nanoTime();
+		long estimatedTime = finishTime - startTime;
+		System.out.println("Start Time: " + startTime + "\t Finish Time: " + finishTime + "\t Estimated Time: " + estimatedTime);
+
+		lhs.printOutput(outputFile);
+				
+		if(flag)
+			lhs.outputVerifier();
+
+		if(lhs.loadValue != 0) {	
+		  	double sumval=0;
+                        for(i=0; i<lhs.nodes; i++)
+                                sumval = sumval + lhs.nval[i];
+
+			if(sumval > 0)
+                                System.out.println();
+		}
+	}
+	
+	/** Initializes all the fields of the abstract node. */
+	void initialize() {
+		finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					nodeSet[i] = new PROCESS();
+					nodeSet[i].id = idSet[i];
+					nodeSet[i].phase = 0;
+					nodeSet[i].status = true;
+					nodeSet[i].sendToPlus.setMessage(idSet[i], 1, false, 0);
+					nodeSet[i].sendToMinus.setMessage(idSet[i], 1, false, 0);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Aims to busy the threads by introducing the no-op instructions
+	 * equivalent to the amount of load specified.
+	 *
+	 * @param  weight	Specifies the current load value for a thread.
+	 * @return 		Updated load value.
+	 */	
+	long loadweight(long weight) {
+                long j=0;
+                for(long i=0; i<loadValue; i++)
+                        j++;
+                return j+weight;
+        }
+	
+	/** 
+	 * Aims at selecting the leader from a set of nodes.
+	 *
+	 * @param	phases		Current phase value.
+	 */
+	void elect(int phases)	{
+		int i=0;
+		
+		finish {
+			for(i=0; i<nodes; i++) {
+				async {
+					if(nodeSet[i].status) {
+						nodeSet[i].sendToMinus.mtime=0;
+						nodeSet[i].sendToPlus.mtime=0;
+						sendMessage((i+1)%nodes, nodeSet[i].sendToPlus.uid, nodeSet[i].sendToPlus.hop, nodeSet[i].sendToPlus.mtime, nodeSet[i].sendToPlus.boundType, false);
+						int xm = (i-1)%nodes;
+						if(xm<0)
+							sendMessage(nodes+xm, nodeSet[i].sendToMinus.uid, nodeSet[i].sendToMinus.hop, nodeSet[i].sendToMinus.mtime, nodeSet[i].sendToMinus.boundType, true);
+						else
+							sendMessage(xm, nodeSet[i].sendToMinus.uid, nodeSet[i].sendToMinus.hop, nodeSet[i].sendToMinus.mtime, nodeSet[i].sendToMinus.boundType, true);
+					}
+					
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+				}
+			}
+		}
+		boolean send_pl[] = new boolean[nodes], send_min[] = new boolean[nodes];
+		
+		for(int k=0; k<2*(int)Math.pow(2,phases); k++) {
+			finish {
+				for(i=0; i<nodes; i++) {
+					async {
+						send_pl[i] = false; send_min[i] = false; 
+						boolean mflag=false, pflag=false, sflag=false;
+						messageSet msp = new messageSet(); 
+						messageSet msl = new messageSet();
+					
+						if(nodeSet[i].messageFromPlus != null) {
+							msp = nodeSet[i].messageFromPlus;
+							if(msp.boundType == false) {
+								if(msp.uid > nodeSet[i].id && msp.hop > 1) {
+									send_min[i] = true;
+									nodeSet[i].sendToMinus = new messageSet();
+									nodeSet[i].sendToMinus.setMessage(msp.uid, msp.hop-1, false, 1);	
+								}
+								else if(msp.uid > nodeSet[i].id && msp.hop == 1) {
+									send_pl[i] = true;
+									nodeSet[i].sendToPlus = new messageSet();
+									nodeSet[i].sendToPlus.setMessage(msp.uid, msp.hop, true, 1);
+								}
+								else if(msp.uid == nodeSet[i].id)
+									nodeSet[i].status = true;
+							}	
+							if(msp.boundType == true && msp.uid > nodeSet[i].id) {
+								send_min[i] = true;
+								nodeSet[i].sendToMinus = new messageSet();
+								nodeSet[i].sendToMinus.setMessage(msp.uid, msp.hop, msp.boundType, 1);
+							}
+							pflag = true;	
+						}
+						
+						if(nodeSet[i].messageFromMinus != null) {
+							msl = nodeSet[i].messageFromMinus;
+							if(msl.boundType == false) {
+								if(msl.uid > nodeSet[i].id && msl.hop > 1) {
+									send_pl[i] = true;
+									nodeSet[i].sendToPlus = new messageSet();
+									nodeSet[i].sendToPlus.setMessage(msl.uid, msl.hop-1, false, 1);
+								}
+								else if(msl.uid > nodeSet[i].id && msl.hop == 1) {
+									send_min[i] = true;
+									nodeSet[i].sendToMinus = new messageSet();
+									nodeSet[i].sendToMinus.setMessage(msl.uid, msl.hop, true, 1);
+								}
+								else if(msl.uid == nodeSet[i].id)
+									nodeSet[i].status = true;
+							}
+							if(msl.boundType == true && msl.uid > nodeSet[i].id) {
+								send_pl[i] = true;
+								nodeSet[i].sendToPlus = new messageSet();
+								nodeSet[i].sendToPlus.setMessage(msl.uid, msl.hop, msl.boundType, 1);
+							}
+							mflag=true;
+						}
+						
+						if(mflag == true && pflag == true) {
+							if(msp.uid == msl.uid && msp.uid == nodeSet[i].id && msp.boundType == msl.boundType && msp.boundType == true && msp.hop == msl.hop && msp.hop == 1) {
+								nodeSet[i].phase +=1;
+								nodeSet[i].status = true;
+							
+								nodeSet[i].sendToPlus = new messageSet();
+								nodeSet[i].sendToPlus.setMessage(nodeSet[i].id, (int)Math.pow(2,nodeSet[i].phase), false, 1);
+								
+								nodeSet[i].sendToMinus = new messageSet();
+								nodeSet[i].sendToMinus.setMessage(nodeSet[i].id, (int)Math.pow(2,nodeSet[i].phase), false, 1);
+								sflag=true;
+							}				
+						}
+
+						if(!sflag)
+							nodeSet[i].status = false;
+						
+						if(loadValue != 0)					
+							nval[i] = loadweight(nval[i]+i);	
+					}
+				}
+			}
+			
+			finish {
+				for(i=0; i<nodes; i++) {
+					async {
+						if(send_pl[i] == true)
+							sendMessage((i+1)%nodes, nodeSet[i].sendToPlus.uid, nodeSet[i].sendToPlus.hop, nodeSet[i].sendToPlus.mtime, nodeSet[i].sendToPlus.boundType, false);
+						if(send_min[i] == true) {
+							int xm = (i-1)%nodes;
+	
+							if(xm<0)
+							sendMessage(nodes+xm, nodeSet[i].sendToMinus.uid, nodeSet[i].sendToMinus.hop, nodeSet[i].sendToMinus.mtime, nodeSet[i].sendToMinus.boundType, true);
+							else
+								sendMessage(xm, nodeSet[i].sendToMinus.uid, nodeSet[i].sendToMinus.hop, nodeSet[i].sendToMinus.mtime, nodeSet[i].sendToMinus.boundType, true);
+						}
+						
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}		
+			
+			finish {
+				for(i=0; i<nodes; i++) {
+					async {
+						if(nodeSet[i].messageFromPlus != null) {
+							if(nodeSet[i].messageFromPlus.mtime != 1)
+								nodeSet[i].messageFromPlus = null;
+							else
+								nodeSet[i].messageFromPlus.mtime = 0;
+						}
+						if(nodeSet[i].messageFromMinus != null) {
+							if(nodeSet[i].messageFromMinus.mtime != 1)
+								nodeSet[i].messageFromMinus = null;
+							else
+								nodeSet[i].messageFromMinus.mtime = 0;
+						}
+						
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}
+		}	
+	}
+	
+	/** 
+	 * Transmits the message from one node to another.
+	 *
+	 * @param	aNode		Node whose messages are to be set.
+	 * @param	uid		Leader Id.
+	 * @param	hop		Hop count value.
+	 * @param	mtime		A timestamp.
+	 * @param	boundType	Inbound or Outbound message.
+	 * @param	from		Message Sender.
+	 */
+	void sendMessage(int aNode, int uid, int hop, int mtime, boolean boundType, boolean from) {
+		if(from) {
+			nodeSet[aNode].messageFromPlus = new messageSet();
+			nodeSet[aNode].messageFromPlus.setMessage(uid, hop, boundType, mtime);
+		}
+		else {
+			nodeSet[aNode].messageFromMinus = new messageSet();
+			nodeSet[aNode].messageFromMinus.setMessage(uid, hop, boundType, mtime);
+		}
+	}
+	
+	/** 
+	 * Transmits the message from one node to another. 
+	 *
+	 * @param	phases		Total phases.
+	 */
+	void transmit(int phases) {
+		for(int i=0; i<nodes; i++) {
+			if(nodeSet[i].status) {
+				int xm;
+				if(i-1>=0)
+					xm = i-1;
+				else
+					xm = nodes-1;
+				sendMessage((i+1)%nodes, i, 1, 0, true, false);
+				int xplus = (i+1)%nodes;
+				sendMessage(xm, i, 1, 0, true, true);
+				
+				for(int k=0; k<nodes/2; k++) {
+					if(nodeSet[xm].messageFromPlus != null) {
+						nodeSet[xm].leaderId = nodeSet[xm].messageFromPlus.uid;
+						nodeSet[xm].status = false;
+						int ns;
+						if(xm-1>=0)
+							ns = xm-1;
+						else
+							ns = nodes-1;
+						sendMessage(ns, nodeSet[xm].messageFromPlus.uid, 1, 0, true, true);
+						xm = ns;
+					}
+					if(nodeSet[xplus].messageFromMinus != null) {
+						nodeSet[xplus].leaderId = nodeSet[xplus].messageFromMinus.uid;
+						nodeSet[xplus].status = false;
+						sendMessage((xplus+1)%nodes, nodeSet[xplus].messageFromMinus.uid, 1, 0, true, false);
+						xplus = (xplus+1)%nodes;
+					}
+				}
+				nodeSet[i].leaderId = i;
+				break;
+			}			
+		}
+	}
+
+	/** 
+	 * Writes the output to the user specified file.
+	 * 
+	 * @param  fileName	Name of the file in which output has to be stored.
+	 * @throws 		input output exception if a failure in write occurs.
+	 */
+	void printOutput(String outputFile) throws IOException {	
+		Writer output = null;
+	  	output = new BufferedWriter(new FileWriter(outputFile));
+	  	output.write("Leader is node: " + nodeSet[0].leaderId);
+		output.close();
+	}
+	
+	/** Validates the output resulting from the execution of the algorithm. */
+	void outputVerifier()
+	{
+		int max=Integer.MIN_VALUE, leaderNode=-1;
+		boolean flag = false;
+		
+		for(int i=0; i<nodes; i++)
+			if(max < idSet[i])
+			{
+				leaderNode = i;
+				max = idSet[i];
+			}	
+		
+		if(max == idSet[nodeSet[0].leaderId])
+		{
+			for(int i=0; i<nodes; i++)
+				if(nodeSet[i].leaderId != leaderNode)
+					flag = true;
+			
+			if(!flag)					
+				System.out.println("Output verified");
+		}	
+	}
+
+}
+
+/** Defines the structure for a message. */ 
+class messageSet
+{
+	/** Specifies the identifier of the sender. */
+	int uid;
+	
+	/** Specifies hops for a message to travel. */
+	int hop;
+	
+	/** mtime = 0, message to be used in this round ; mtime = 1, message for next round. */
+	int mtime;
+	
+	/** boundType = false, outbound message ; boundType = true, inbound message. */
+	boolean boundType;				
+	
+	void setMessage(int uid, int hop, boolean boundType, int mtime) {
+		this.uid = uid;
+		this.hop =  hop;
+		this.mtime = mtime;
+		this.boundType = boundType;
+	}
+}
+
+/**
+ * <code>PROCESS</code> specifies the structure for each abstract node
+ * part of the Leader election algorithm.
+ */
+class PROCESS
+{
+	/** Specifies identifier for each node. */
+	int id;
+	
+	/** Specifies information about the phase. */
+	int phase;
+	
+	/** Specifies the identifier of the leader. */
+	int leaderId;
+	
+	/** If status = true, then leader capable. */	
+	boolean status;								 
+
+	/** Message to be sent to plus node. */
+	messageSet sendToPlus = new messageSet();
+	
+	/** message to be sent to minus. */ 				
+	messageSet sendToMinus = new messageSet(); 				
+
+	/** Mailbox for message recieved from plus. */
+	messageSet messageFromPlus = new messageSet();
+	
+	/** Mailbox for message recieved from minus. */	
+	messageSet messageFromMinus = new messageSet();	
+}

@@ -1,0 +1,619 @@
+/* This file is part of IMSuite Benchamark Suite.
+ * 
+ * This file is licensed to You under the Eclipse Public License (EPL);
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * (C) Copyright IMSuite 2013-present.
+ */
+
+import java.io.*;
+import java.util.*;
+
+/** 
+ * dominatingSet aims to find a dominating set among a set of nodes.
+ * The algorithm also uses the concept of node coloring for identifying
+ * which node will be part of dominating set.
+ *
+ * @author Suyash Gupta
+ * @author V Krishna Nandivada
+ */
+public class dominatingSet 
+{
+	int adj_graph[][], nodes;
+	
+	/** Colors for node. */
+	final int WHITE = 0;
+	final int GREY = 1;
+	final int BLACK = 2;
+	
+	/** Abstract node representation */
+	Vertex vertexSet[];
+	
+	boolean domSet[];
+	boolean change[];
+	Random rs[];
+
+	/** Parameters to enable execution with load */
+	long nval[],loadValue=0;
+
+	/** Counter for measuring total atomic. */
+        int ciso[];
+
+	/** 
+	 * Acts as the starting point for the program execution. 
+	 * <code>main</code> performs the task of accepting the input from the user 
+	 * specified file, calling <code>createDominatingSet<\code> method, 
+	 * printing the output and validating the result.
+	 *
+	 * @param args 		array of runtime arguments.
+	 * @throws Exception	if File handling operation illegal. 
+	 */
+	public static void main(String []args)	throws Exception
+	{
+		String inputFile = "inputdominatingSet", outputFile = "outputdominatingSet";
+		int i,j;
+		boolean flag = false;
+		
+		dominatingSet ds = new dominatingSet();
+		for(i=0; i<args.length; i++) {
+			if(args[i].equals("-ver") || args[i].equals("-verify"))
+				flag = true;
+			else if(args[i].equals("-in")) {
+				inputFile = args[i+1];
+				i++;
+			}	
+			else if(args[i].equals("-out")) {
+				outputFile = args[i+1];
+				i++;
+			}
+			else if(args[i].equals("-lfon")) {
+				ds.loadValue = Integer.parseInt(args[i+1]);
+				i++;
+			}
+			else
+				System.out.println("Wrong option specified");		
+		}
+
+		FileReader fr = new FileReader(inputFile);
+		BufferedReader br = new BufferedReader(fr);
+		String s = br.readLine();
+			
+		ds.nodes = Integer.parseInt(s);
+		ds.adj_graph = new int[ds.nodes][ds.nodes];
+		ds.vertexSet = new Vertex[ds.nodes];
+		ds.domSet = new boolean[ds.nodes];
+		ds.change = new boolean[ds.nodes];
+		ds.rs = new Random[ds.nodes];		
+		ds.nval = new long[ds.nodes];
+	
+		ds.ciso = new int[ds.nodes];
+
+		j=0;
+		while((s = br.readLine()) != null) {
+			for(i=0; i<s.length(); i++)
+				ds.adj_graph[j][i] = Character.digit(s.charAt(i), 10);
+			j++;
+		}
+		
+		ds.initialize();
+			
+		ds.createDominatingSet();
+
+		if(ds.loadValue!= 0) {
+			double sumval=0;
+                        for(i=0; i<ds.nodes; i++)
+                                sumval = sumval + ds.nval[i];
+
+			if(sumval > 0)
+                                System.out.println();
+		}
+		
+		ds.isolatedCount();		
+	}
+
+	void isolatedCount() {
+                int isum=0; 
+                for(int i=0; i<nodes; i++) 
+                        isum = isum + ciso[i];
+                System.out.println(isum);       
+        }
+
+	/** Initializes all the fields of the abstract node. */ 
+	void initialize() {
+		finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					int j=0,k=0;
+					vertexSet[i] = new Vertex();
+					vertexSet[i].Wv = 1;
+			
+					for(j=0; j<nodes; j++)
+						if(adj_graph[i][j] == 1)
+							vertexSet[i].Wv++;
+					
+					vertexSet[i].color = WHITE;
+					vertexSet[i].WHat = 0;
+					vertexSet[i].support = 0;
+					vertexSet[i].neighbours = new int[vertexSet[i].Wv];
+					vertexSet[i].whiteNeighbours = new int[vertexSet[i].Wv];
+						
+					for(j=0; j<nodes; j++)
+						if(adj_graph[i][j] == 1) {
+							vertexSet[i].neighbours[k] = j;
+							vertexSet[i].whiteNeighbours[k] = j;
+							k++;
+						}
+					vertexSet[i].neighbours[k] = i;
+					vertexSet[i].whiteNeighbours[k] = i;
+					rs[i] = new Random(i);
+				}
+			}		
+		}
+		
+		finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					int j, length, count = vertexSet[i].neighbours.length, retArray[];
+					boolean flag;
+						
+					for(j=0; j<vertexSet[i].neighbours.length; j++)
+						vertexSet[i].N2v.add(vertexSet[i].neighbours[j]);
+				
+					for(j=0; j<vertexSet[i].neighbours.length; j++)
+						if(vertexSet[i].neighbours[j] != i) {
+							retArray = getNeighborArray(vertexSet[i].neighbours[j]);
+							for(int k=0; k<retArray.length; k++) {
+								flag = false;
+								for(int l=0; l<vertexSet[i].N2v.size(); l++)
+									if(vertexSet[i].N2v.get(l) == retArray[k]) {
+										flag = true;
+										break;
+									}
+								if(!flag)
+									vertexSet[i].N2v.add(retArray[k]);
+							}
+						}
+				}
+			}		
+		}
+	}
+	
+	/**
+	 * Aims to busy the threads by introducing the no-op instructions
+	 * equivalent to the amount of load specified.
+	 *
+	 * @param  weight	Specifies the current load value for a thread.
+	 * @return 		Updated load value.
+	 */
+	long loadweight(long weight) {
+                long j=0;
+                for(long i=0; i<loadValue; i++)
+                        j++;
+                return j+weight;
+        }
+	
+	/** Aims to create a dominating set from a set of nodes. */
+	void createDominatingSet() {
+		boolean check;
+		do {
+			change = new boolean[nodes];
+			finish {
+				for(int i=0; i<nodes; i++) {
+					async {
+						if(vertexSet[i].Wv != 0) {
+							vertexSet[i].Wtilde = (int)(Math.log(vertexSet[i].Wv)/Math.log(2));
+							int x= (int)Math.pow(2, vertexSet[i].Wtilde);
+							vertexSet[i].Wtilde = x;
+						}
+
+						if(loadValue != 0)						
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}										
+
+			finish	{
+				for(int i=0; i<nodes; i++) {
+					async {
+						if(vertexSet[i].Wv != 0) {
+							vertexSet[i].WHat = 0;						
+							for(int j=0; j<vertexSet[i].N2v.size(); j++)
+								if(i != vertexSet[i].N2v.get(j)) {
+									if(getColor(vertexSet[i].N2v.get(j)) == WHITE) {
+										int n2value = getWtilde(vertexSet[i].N2v.get(j));
+										if(vertexSet[i].WHat < n2value)
+											vertexSet[i].WHat=n2value;
+									}		
+								}
+							if(vertexSet[i].WHat < 	vertexSet[i].Wtilde)
+								vertexSet[i].WHat = vertexSet[i].Wtilde;		
+						
+							if(vertexSet[i].WHat == vertexSet[i].Wtilde)
+								vertexSet[i].active = true;
+							else
+								vertexSet[i].active = false;
+						}
+
+						if(loadValue != 0)						
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}
+			
+			finish	{
+				for(int i=0; i<nodes; i++) {
+					async {
+						if(vertexSet[i].Wv != 0) {
+							vertexSet[i].support = 0;
+							for(int j=0; j<vertexSet[i].neighbours.length; j++)
+								if(i != vertexSet[i].neighbours[j])
+									if(getActiveState(vertexSet[i].neighbours[j]))
+										vertexSet[i].support++;
+							if(vertexSet[i].active)
+								vertexSet[i].support++;
+						}
+						
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}											
+			
+			finish	{
+				for(int i=0; i<nodes; i++) {
+					async {
+						if(vertexSet[i].Wv != 0) {
+							vertexSet[i].Sv = 0;
+							for(int j=0; j<vertexSet[i].whiteNeighbours.length; j++)
+								if(i != vertexSet[i].whiteNeighbours[j])
+									if(vertexSet[i].Sv < getSupport(vertexSet[i].whiteNeighbours[j]))
+										vertexSet[i].Sv = getSupport(vertexSet[i].whiteNeighbours[j]);
+							if(vertexSet[i].Sv < vertexSet[i].support)
+								vertexSet[i].Sv = vertexSet[i].support;
+							vertexSet[i].candidate = false;
+							
+							if(vertexSet[i].active) {
+								double probab = rs[i].nextDouble(),	ratio = 1.0/vertexSet[i].Sv;	
+								if(probab <= ratio)
+									vertexSet[i].candidate = true;
+							}
+						}
+
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}				
+			
+			finish	{
+				for(int i=0; i<nodes; i++) {
+					async {
+						if(vertexSet[i].Wv != 0) {
+							vertexSet[i].Cv = 0;
+							for(int j=0; j<vertexSet[i].whiteNeighbours.length; j++)
+								if(i != vertexSet[i].whiteNeighbours[j])
+									if(getCandidate(vertexSet[i].whiteNeighbours[j]))
+										vertexSet[i].Cv++;
+							if(vertexSet[i].candidate)
+								vertexSet[i].Cv++;
+						}
+						
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}
+			
+			finish	{
+				for(int i=0; i<nodes; i++) {
+					async {
+						if(vertexSet[i].Wv != 0) {
+							int sumCv=0;				
+							for(int j=0; j<vertexSet[i].whiteNeighbours.length; j++)
+								if(i != vertexSet[i].whiteNeighbours[j])
+									sumCv = sumCv + getCv(vertexSet[i].whiteNeighbours[j]);
+							sumCv = sumCv + vertexSet[i].Cv;
+							
+							if(vertexSet[i].candidate && sumCv <= 3*vertexSet[i].Wv) {
+								for(int j=0; j<vertexSet[i].neighbours.length; j++)
+									if(i != vertexSet[i].neighbours[j])
+										sendneighbor(vertexSet[i].neighbours[j], i);
+								vertexSet[i].domSetCandidate = true;
+							}
+						}
+						
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}						
+			
+			finish	{
+				for(int i=0; i<nodes; i++) {
+					async {
+						if(vertexSet[i].domSetCandidate && vertexSet[i].Wv != 0) {
+								int maxId = i;
+								for(int j=0; j<vertexSet[i].neighborCandidate.size(); j++)
+									if(maxId < vertexSet[i].neighborCandidate.get(j))
+										maxId = vertexSet[i].neighborCandidate.get(j);
+										
+								if(maxId == i) {
+									domSet[i] = true;
+									vertexSet[i].color = BLACK;
+									for(int j=0; j<vertexSet[i].neighbours.length; j++)
+										if(i != vertexSet[i].neighbours[j]) {
+											setClearFlag(vertexSet[i].neighbours[j]);
+											setColor(vertexSet[i].neighbours[j]);
+										}	
+									vertexSet[i].cflag = true;
+								}
+							vertexSet[i].domSetCandidate = false;
+						}
+						vertexSet[i].neighborCandidate.clear();
+
+						if(loadValue != 0)						
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}
+			
+			finish	{
+				for(int i=0; i<nodes; i++) {
+					async {
+						if(vertexSet[i].Wv != 0 && vertexSet[i].cflag) {
+							vertexSet[i].Wv = 0;
+							vertexSet[i].cflag = false;
+							vertexSet[i].active = false;
+						}
+						
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}							
+			
+			finish	{
+				for(int i=0; i<nodes; i++) {
+					async {
+						if(vertexSet[i].Wv != 0) {				
+							vertexSet[i].Wv = 0;
+							for(int j=0; j<vertexSet[i].neighbours.length; j++)
+								if(WHITE == getColor(vertexSet[i].neighbours[j]))
+									vertexSet[i].Wv++;
+							
+							int k=0;
+							vertexSet[i].whiteNeighbours = new int[vertexSet[i].Wv];
+							for(int j=0; j<vertexSet[i].neighbours.length; j++)
+								if(WHITE == getColor(vertexSet[i].neighbours[j])) {
+									vertexSet[i].whiteNeighbours[k] = vertexSet[i].neighbours[j];
+									k++;
+								}
+							if(vertexSet[i].Wv == 0) {
+								vertexSet[i].color = BLACK;
+								domSet[i] = true;
+							}
+							
+							else	
+								change[i] = true;
+						}
+
+						if(loadValue != 0)						
+							nval[i] = loadweight(nval[i]+i);
+					}
+				}
+			}
+			check = checkChange();
+							
+		}while(check);
+	}
+	
+	/** Tells whether for any node the color exists <code>WHITE\code> or not.
+	 * 
+	 * @return	true if some node color is <code>WHITE<\code>.
+	 */
+	Boolean checkChange() {
+		int counter = 0;
+		boolean flag=false;
+		for(int i=0; i<nodes; i++)
+			if(change[i])
+				counter++;
+		if(counter > 0)
+			return true;
+		else
+			return false; 	
+	}
+	
+	/** 
+	 * Adds a node as the neighbor of some other node.
+	 *
+	 * @param npt		Node which receives a new neighbor.
+	 * @param index		Neighbor candidate.
+	 */
+	void sendneighbor(int npt, int index) {
+		isolated { 
+			/** Inside existing atomic operation, increment counter for atomic. */
+			ciso[npt] = ciso[npt] + 1;		
+
+			vertexSet[npt].neighborCandidate.add(index);
+		}
+	}
+	
+	/** 
+	 * Clears the flag.
+	 *
+	 * @param npt	Node whose flag has to be cleared.
+	 */
+	void setClearFlag(int npt) {
+		isolated { 
+			/** Inside existing atomic operation, increment counter for atomic. */
+			ciso[npt] = ciso[npt] + 1;
+
+			vertexSet[npt].cflag = true; 
+		}
+	}
+
+	/** 
+	 * Set the count of White neighbors. 
+	 *
+	 * @param aNode		Node whose <code>Wv<\code> has o be set.
+	 */
+	void setWv(int aNode) {
+		vertexSet[aNode].Wv = 0;
+	}
+
+	/** 
+	 * Provides the set of neighbors of a node. 
+	 * 
+	 * @param   aNode	Node whose neighbors are required.			
+	 * @return 		neighbors of <code>anode<\code>.
+	 */
+	int []getNeighborArray(int aNode) {
+		return vertexSet[aNode].neighbours;
+	}
+	
+	/** 
+	 * Provides the value of <code>Wtilde<\code> for a node. 
+	 * 
+	 * @param   j	Node whose <code>Wtilde<\code> is required.
+	 * @return 	<code>Wtilde<\code> of node <code>j<\code>.
+	 */
+	int getWtilde(int j) {
+		return vertexSet[j].Wtilde;
+	}
+	
+	/** 
+	 * Provides the value of <code>active<\code> variable for a node. 
+	 * 
+	 * @param   j	Node whose <code>active<\code> is required.
+	 * @return 	<code>active<\code> of node <code>j<\code>.
+	 */
+	boolean getActiveState(int j) {
+		return vertexSet[j].active;
+	}
+	
+	/** 
+	 * Provides the value of <code>support<\code> for a node. 
+	 * 
+	 * @param   j	Node whose <code>support<\code> is required.
+	 * @return 	<code>support<\code> of node <code>j<\code>.
+	 */
+	int getSupport(int j) {
+		return vertexSet[j].support;
+	}
+	
+	/** 
+	 * Provides the value of <code>candidate<\code> for a node. 
+	 * 
+	 * @param   j	Node whose <code>candidate<\code> is required.
+	 * @return 	<code>candidate<\code> of node <code>j<\code>.
+	 */
+	boolean getCandidate(int j) {
+		return vertexSet[j].candidate;
+	}
+	
+	/** 
+	 * Provides the value of <code>Cv<\code> for a node. 
+	 * 
+	 * @param   j	Node whose <code>Cv<\code> is required.
+	 * @return 	<code>Cv<\code> of node <code>j<\code>.
+	 */
+	int getCv(int j){
+		return vertexSet[j].Cv;
+	}
+	
+	/** 
+	 * Provides the color information for a node. 
+	 * 
+	 * @param   j	Node whose color is required.
+	 * @return 	<code>Wtilde<\code> of a node.
+	 */
+	int getColor(int j) {
+		return vertexSet[j].color;
+	}
+	
+	/** 
+	 * Sets the color of a node to <code>GRAY<\code> for a node.
+	 *
+	 * @param   j	Node whose color is to be set.
+	 */
+	void setColor(int j) {
+		if(vertexSet[j].color == WHITE)
+			vertexSet[j].color = GREY;
+	}
+	
+	/** 
+	 * Writes the output to the user specified file.
+	 * 
+	 * @param  fileName	Name of the file in which output has to be stored.
+	 * @throws 		input output exception if a failure in write occurs.
+	 */
+	void printDominatingSet(String fileName) throws IOException {
+	  	Writer output = null;
+	  	output = new BufferedWriter(new FileWriter(fileName));
+		for(int i=0; i<nodes; i++)
+			if(domSet[i])
+				output.write("\n" + i);
+		output.close();		
+	}
+
+	/** Validates the output resulting from the execution of the algorithm. */	
+	void outputVerifier() {
+		int i,count=0;
+		boolean flag = false, setNodes[] = new boolean[nodes];
+		for(i=0; i<domSet.length; i++)
+			if(domSet[i])
+				for(int j=0; j<nodes; j++)
+					if(adj_graph[i][j] == 1)
+						setNodes[j] = true;
+		for(i=0; i<domSet.length; i++)
+			if(domSet[i] && setNodes[i]) {
+				System.err.println("Node " + i + " present in both sets");
+				flag = true;
+				break;
+			}
+		for(i=0; i<setNodes.length; i++) {	
+			if(setNodes[i])
+				count++;
+			if(domSet[i])
+				count++;
+		}
+		if(nodes != count)
+			System.err.println("Count: " + count + " nodes: " + nodes);		
+		if(!flag && count == nodes)
+			System.out.println("Output verified");
+	}
+}
+
+/**
+ * <code>Vertex</code> specifies the structure for each abstract node
+ * part of the Dominating Set.
+ */
+class Vertex
+{
+	/** Specifies the neighbors of a node. */
+	int neighbours[];
+	
+	/** Specifies the white neighbors of a node. */
+	int whiteNeighbours[];
+	
+	/** Specifies the count of white neighbors of a node. */
+	int Wv;
+	int Wtilde;
+	int WHat;
+	int support;
+	int Sv;
+	int Cv;
+	int color;
+	boolean cflag;
+	boolean active;	
+	boolean candidate;
+	
+	/** Specifies information whether the node can compete to be part of dominating Set. */
+	boolean domSetCandidate;
+	
+	/** Set of neighbors till distance two. */
+	ArrayList<Integer> N2v = new ArrayList<Integer>();
+	ArrayList<Integer> neighborCandidate = new ArrayList<Integer>();
+}

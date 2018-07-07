@@ -1,0 +1,465 @@
+/* This file is part of IMSuite Benchamark Suite.
+ * 
+ * This file is licensed to You under the Eclipse Public License (EPL);
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * (C) Copyright IMSuite 2013-present.
+ */
+
+import java.io.*;
+import java.util.*;
+
+/** 
+ * kcommitte aims to create committees of size less than or equal to k.
+ * If k>=n then there shall be a single committee.
+ *
+ * @author Suyash Gupta
+ * @author V Krishna Nandivada
+ */
+public class kcommitte 
+{
+	int adj_graph[][], nodes, min_val[], Null=Integer.MAX_VALUE; 
+	
+	/** Parameters to enable execution with load */
+	long loadValue=0, nval[];
+	
+	/** Default Value for K. */
+	static int K = 6;
+	
+	/** Abstract node representation */
+	Node nodeSet[];
+
+	/** 
+	 * Acts as the starting point for the program execution. 
+	 * <code>main</code> performs the task of accepting the input from the user 
+	 * specified file, calling <code>polling<\code> and <code>selection<\code> 
+	 * methods responsible for committee creation, printing the output and 
+	 * validating the result.
+	 *
+	 * @param args 		array of runtime arguments.
+	 * @throws Exception	if File handling operation illegal. 
+	 */ 
+ 	public static void main(String []args) throws Exception {
+		String inputFile = "inputKCommittee16.txt", outputFile = "outputKcommittee.txt";
+		int j=0, i;
+		boolean flag=false;
+		
+		kcommitte kc = new kcommitte(); 
+		for(i=0; i<args.length; i++) {
+			if(args[i].equals("-ver") || args[i].equals("-verify"))
+				flag = true;
+			else if(args[i].equals("-in")) {
+				inputFile = args[i+1];
+				i++;
+			}	
+			else if(args[i].equals("-out")) {
+				outputFile = args[i+1];
+				i++;
+			}
+			else if(args[i].equals("-lfon")) {
+				kc.loadValue = Long.parseLong(args[i+1]);
+				i++;
+			}
+			else
+				System.out.println("Wrong option specified");		
+		}
+
+		FileReader fr = new FileReader(inputFile);
+		BufferedReader br = new BufferedReader(fr);
+		String s = br.readLine();
+		kc.nodes = Integer.parseInt(s);
+		s = br.readLine();
+		kc.K = Integer.parseInt(s);
+		kc.adj_graph = new int[kc.nodes][kc.nodes];
+		kc.min_val = new int[kc.nodes];
+		kc.nodeSet = new Node[kc.nodes];
+		kc.nval = new long[kc.nodes];
+		
+		j=0;
+		while(!((s = br.readLine()).equals(" "))) {
+			for(i=0; i<s.length(); i++)
+				kc.adj_graph[j][i] = Character.digit(s.charAt(i), 10);
+			j++;
+		}
+
+		j=0;
+		while((s = br.readLine()) != null) {
+			kc.min_val[j] = Integer.parseInt(s);
+			j++;
+		}
+		
+		kc.initialize();
+			
+		long startTime = System.nanoTime();
+		for(int k=0; k<K; k++) {
+			kc.polling();
+			kc.selection();
+			kc.clear();
+		}
+		kc.selfCommittee();
+		long finishTime = System.nanoTime();
+		long estimatedTime = finishTime - startTime;
+		System.out.println("Start Time: " + startTime + "\t Finish Time: " + finishTime + "\t Estimated Time: " + estimatedTime);
+
+ 		kc.printCommittee(outputFile);
+ 			
+		if(flag)
+			kc.outputVerifier();
+
+		if(kc.loadValue != 0) {
+			double sumval=0;
+                        for(i=0; i<kc.nodes; i++)
+                                sumval = sumval + kc.nval[i];
+
+			if(sumval > 0)
+                                System.out.println();
+		}
+ 	}
+
+	/** Initializes all the fields of the abstract node. */  	
+ 	void initialize() {
+		for(int i=0; i<nodes; i++) {
+ 			int j,count=0;
+	 		nodeSet[i] = new Node();
+	 		nodeSet[i].leader = i;
+	 		nodeSet[i].committee = -1;
+	 		nodeSet[i].val = min_val[i];
+					 
+	 		for(j=0; j<nodes; j++)
+		 		if(adj_graph[i][j] == 1)
+			 		count++;
+	 		nodeSet[i].neighbors = new int[count];
+	 		count=0;
+	 		for(j=0; j<nodes; j++)
+		 		if(adj_graph[i][j] == 1)
+		 		{
+			 		nodeSet[i].neighbors[count] = j;
+			 		count++;
+		 		}
+		 	nodeSet[i].invitation.from=-1;
+		 	nodeSet[i].invitation.to=-1;
+ 		}
+ 	}
+ 	
+ 	/**
+	 * Aims to busy the threads by introducing the no-op instructions
+	 * equivalent to the amount of load specified.
+	 *
+	 * @param  weight	Specifies the current load value for a thread.
+	 * @return 		Updated load value.
+	 */
+	long loadweight(long weight) {
+                long j=0;
+                for(long i=0; i<loadValue; i++)
+                        j++;
+                return j+weight;
+        }
+ 	
+ 	/** Resets the value of all holders. */
+ 	void clear() {
+ 		//finish 
+			for(int i=0; i<nodes; i++) {
+		 		//async 
+			 		nodeSet[i].minActive.clear();
+			 		nodeSet[i].invitation.clear();
+			 		nodeSet[i].minActiveHolder.clear();
+					
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+ 		 	} 
+ 	}
+ 
+ 	/** Polls to select candidates capable of being leader. */ 
+ 	void polling() {
+ 		//finish 
+ 			for(int i=0; i<nodes; i++) {
+				//async 
+					if(nodeSet[i].committee == -1)
+						nodeSet[i].minActive.setData(i, nodeSet[i].val);
+					else
+						nodeSet[i].minActive.setData(-1, Null);	
+					
+					if(loadValue != 0)					
+						nval[i] = loadweight(nval[i]+i);
+		 	}
+  
+ 		for(int kk=0; kk<K-1; kk++) {
+ 			//finish 
+ 				for(int i=0; i<nodes; i++) {
+					//async 
+						for(int j=0; j<nodeSet[i].neighbors.length; j++)
+					 		sendMinActive(nodeSet[i].neighbors[j], nodeSet[i].minActive.from, nodeSet[i].minActive.value);
+					 	
+					 	if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+				}	
+
+		 	//finish 
+		 		for(int i=0; i<nodes; i++) {
+					//async 
+						Message ms = null;
+						int minValue = nodeSet[i].minActive.value;
+						int minId = nodeSet[i].minActive.from;
+						for(int j=nodeSet[i].minActiveHolder.size()-1; j>=0; j--) {
+							ms = nodeSet[i].minActiveHolder.get(j);
+							if(ms.value < minValue) {
+								minValue = ms.value;
+								minId = ms.from;
+							}
+						}
+						nodeSet[i].minActiveHolder.clear();
+				 		nodeSet[i].minActive.setData(minId, minValue);
+			
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+				}
+		}
+					
+		//finish 
+			for(int i=0; i<nodes; i++) {
+				//async 		 
+					if(nodeSet[i].minActive.value < getLeaderValue(nodeSet[i].leader))
+				 		nodeSet[i].leader = nodeSet[i].minActive.from;	
+
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+		 	}
+ 	} 
+ 
+ 	/** Selects nodes to be part of committee of the leader. */
+ 	void selection() {
+ 		//finish 
+ 			for(int i=0; i<nodes; i++) {
+				//async 
+					if(nodeSet[i].leader == i) {
+						Invitation inv = new Invitation();
+						inv.from = i;	inv.to = nodeSet[i].minActive.from;	inv.leaderVal=nodeSet[i].val;
+						nodeSet[i].invitationHolder.add(inv);
+ 					}
+ 					
+ 					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+ 			}
+	 
+ 		for(int kk=0; kk<K-1; kk++) {
+ 			//finish 
+ 				for(int i=0; i<nodes; i++) {
+					//async 
+						Invitation invite = new Invitation();
+						for(int j=0; j<nodeSet[i].invitationHolder.size(); j++) {
+							invite = nodeSet[i].invitationHolder.get(j);
+							for(int k=0; k<nodeSet[i].neighbors.length; k++)
+								sendInvitation(nodeSet[i].neighbors[k], invite.from, invite.to, invite.leaderVal);
+						}
+						nodeSet[i].invitationHolder.clear();
+
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+ 				}
+ 			
+ 			//finish 
+ 				for(int i=0; i<nodes; i++) {
+					//async 
+						if(nodeSet[i].tempInvitationHolder.size() > 0)
+							nodeSet[i].invitationHolder.add(nodeSet[i].tempInvitationHolder.get(0));
+						
+						boolean flag=false;
+						Invitation invite = new Invitation();
+						Invitation cinvite = new Invitation();
+						for(int j=1; j<nodeSet[i].tempInvitationHolder.size(); j++) {
+							flag = false;
+							invite = nodeSet[i].tempInvitationHolder.get(j);
+							for(int k=0; k<nodeSet[i].invitationHolder.size(); k++) {
+								cinvite = nodeSet[i].invitationHolder.get(k);
+								if(cinvite.from == invite.from && cinvite.to == invite.to) {
+									flag = true;
+									break;
+								}
+							}
+							if(!flag)
+								nodeSet[i].invitationHolder.add(invite);
+						}
+						nodeSet[i].tempInvitationHolder.clear();
+
+						if(loadValue != 0)
+							nval[i] = loadweight(nval[i]+i);
+				}
+			
+	 		//finish 
+	 			for(int i=0; i<nodes; i++) {
+					//async 
+						boolean flag=false;
+						if(nodeSet[i].invitationHolder.size() > 0) {
+							Invitation invite = new Invitation();
+							int mn = Integer.MAX_VALUE, ifrom=-1;
+								
+							for(int j=nodeSet[i].invitationHolder.size()-1; j>=0; j--) {
+								invite=nodeSet[i].invitationHolder.get(j);
+								if(invite.to == i) {
+									if(invite.leaderVal < mn) {
+										mn =invite.leaderVal;
+										ifrom = invite.from;
+									}		
+									nodeSet[i].invitationHolder.remove(j);
+									flag=true;
+								}
+							}					 
+							if(flag) {
+								nodeSet[i].invitation.from = ifrom;
+								nodeSet[i].invitation.to = i;
+								nodeSet[i].invitation.leaderVal = mn;
+							}
+							else {
+								nodeSet[i].invitation.from = -1;
+								nodeSet[i].invitation.to = Null;
+								nodeSet[i].invitation.leaderVal = -1;
+							}
+ 						}
+
+						if(loadValue != 0)
+	 						nval[i] = loadweight(nval[i]+i);
+ 				}
+ 		}
+		
+		//finish 
+			for(int i=0; i<nodes; i++) {
+				//async 
+					if(nodeSet[i].invitation.to == i)
+						nodeSet[i].committee = nodeSet[i].invitation.from;
+					
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);	
+			}
+ 	}
+
+ 	/** Sets committee for nodes to be self which are left uninvited. */
+ 	void selfCommittee() {
+ 		//finish 
+ 			for(int i=0; i<nodes; i++) {
+ 				//async 
+					if(nodeSet[i].committee == -1)
+						nodeSet[i].committee = i;
+
+					if(loadValue != 0)
+ 						nval[i] = loadweight(nval[i]+i);
+			}
+ 	}
+ 
+ 	/** 
+	 * Writes the output to the user specified file.
+	 * 
+	 * @param  fileName	Name of the file in which output has to be stored.
+	 * @throws 		input output exception if a failure in write occurs.
+	 */
+ 	void printCommittee(String fileName) throws IOException {
+ 		Writer output = null;
+  		output = new BufferedWriter(new FileWriter(fileName));
+  		for(int i=0; i<nodes; i++)
+			output.write("\n Node " + i + "\t: Committee " + nodeSet[i].committee);		
+  		output.close();
+ 	}
+ 	
+ 	/** 
+	 * Provides the value of the leader node. 
+	 * 
+	 * @param	aNode		Node whose leader is required.
+	 * @return 			value of the leader.
+	 */
+ 	int getLeaderValue(int aNode) {
+ 		return nodeSet[aNode].val;
+ 	}
+ 
+	/** 
+ 	 * Transmits the value of <code>minActive<\code> of a node.
+ 	 *
+	 * @param	neighbor	Node which recieves <code>minActive<\code>.
+	 * @param	from		Node which provides <code>minActive<\code>.
+	 * @param	value		<code>minActive<\code> value.
+	 */
+ 	void sendMinActive(int neighbor, int from, int value) {
+ 		Message ms = new Message();
+ 		ms.setData(from, value);
+ 		nodeSet[neighbor].minActiveHolder.add(ms);
+ 	}
+ 	
+ 	/** 
+ 	 * Transmits the invitation from one node to another.
+ 	 *
+	 * @param	aNode		Node which recieves invitation.
+	 * @param	from		Node which provides invitation.
+	 * @param	to		Node to which invitation is meant.
+	 * @param	leval		Leader value.
+	 */
+ 	void sendInvitation(int aNode, int from, int to, int leaderVal) {
+ 		Invitation invite = new Invitation();
+ 		invite.from = from; 	invite.to = to;	invite.leaderVal = leaderVal;
+ 		nodeSet[aNode].tempInvitationHolder.add(invite); 
+ 	}
+ 	
+ 	/** Validates the output resulting from the execution of the algorithm. */
+ 	void outputVerifier() {
+ 		int i, id=-1, min = Integer.MAX_VALUE, alead=-1;
+ 		boolean flag = false;
+ 		int nodeComm[] = new int[nodes];
+ 		for(i=0; i<nodes; i++)
+ 			nodeComm[nodeSet[i].committee] = nodeComm[nodeSet[i].committee] + 1;
+ 		for(i=0; i<nodes; i++)
+ 			if(nodeComm[i] > K) {
+ 				flag = true;
+ 				break;
+ 			}	
+ 		if(!flag)
+			System.out.println("Output verified");	
+ 	}
+}
+
+/** Defines the structure of message to be sent out by a node. */
+class Message
+{
+	int from;
+	int value;
+	
+	void setData(int from, int value) {
+		this.from = from; 		this.value = value;
+	}
+	void clear(){ from = -1; value = Integer.MAX_VALUE;}
+}
+
+/** Defines the structure of an invitation to be sent out by a node. */
+class Invitation
+{
+	int from;		
+	int to;
+	int leaderVal;
+	void clear() { from = -1; to = -1; leaderVal=Integer.MAX_VALUE;}
+}
+
+/**
+ * <code>Node</code> specifies the structure for each abstract node
+ * part of the K Committe algorithm.
+ */
+class Node
+{
+	/** Value (minimum active) corresponding to a node. */
+	int val;
+	
+	/** Specifies the leader for the node. */
+	int leader;
+	
+	/** Specifies the committee to which a node belongs. */
+	int committee;
+	
+	/** Specifies the set of neighbors for a node. */
+	int neighbors[];
+	
+	/** Specifies the message, consisting of minimum value, to be sent by a node. */
+	Message minActive = new Message();
+	
+	/** Specifies the invitation sent by a node. */	
+	Invitation invitation = new Invitation();
+	ArrayList<Invitation> invitationHolder = new ArrayList<Invitation>();
+	ArrayList<Invitation> tempInvitationHolder = new ArrayList<Invitation>();
+	ArrayList<Message> minActiveHolder = new ArrayList<Message>();
+}

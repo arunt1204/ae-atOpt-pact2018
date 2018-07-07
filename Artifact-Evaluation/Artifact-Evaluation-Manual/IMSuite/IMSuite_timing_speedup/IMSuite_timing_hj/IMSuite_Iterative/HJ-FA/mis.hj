@@ -1,0 +1,339 @@
+/* This file is part of IMSuite Benchamark Suite.
+ * 
+ * This file is licensed to You under the Eclipse Public License (EPL);
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.opensource.org/licenses/eclipse-1.0.php
+ *
+ * (C) Copyright IMSuite 2013-present.
+ */
+
+import java.io.*;
+import java.util.*;
+
+/** 
+ * mis aims to find a maximal independent set from a set of nodes,
+ * The algorithm utilizes random identifiers to select a candidate
+ * node for MIS.
+ *
+ * @author Suyash Gupta
+ * @author V Krishna Nandivada
+ */
+public class mis 
+{
+	int adj_graph[][];
+	
+	/** Parameters to enable execution with load */
+	long loadValue=0, nval[];
+	int nodes, Infinity = Integer.MAX_VALUE;
+	boolean misSet[], mark[];
+	
+	/** Abstract node representation */
+	node nodeSet[];
+	Random rs[]; 	
+	
+	/** 
+	 * Acts as the starting point for the program execution. 
+	 * <code>main</code> performs the task of accepting the input from the user 
+	 * specified file, creaton of MIS, printing the output and 
+	 * validating the result.
+	 *
+	 * @param args 		array of runtime arguments.
+	 * @throws Exception	if File handling operation illegal. 
+	 */
+	public static void main(String []args)	throws Exception {
+		String inputFile = "inputmis16.txt", outputFile = "outputmis.txt";
+		boolean flag = false, loadCompute=false;
+		int j=0, i, totCom=0;
+		
+		mis ms = new mis(); 
+		for(i=0; i<args.length; i++) {
+			if(args[i].equals("-ver") || args[i].equals("-verify"))
+				flag = true;
+			else if(args[i].equals("-in")) {
+				inputFile = args[i+1];
+				i++;
+			}	
+			else if(args[i].equals("-out")) {
+				outputFile = args[i+1];
+				i++;
+			}
+			else if(args[i].equals("-lfon")) {
+				ms.loadValue = Long.parseLong(args[i+1]);
+				i++;
+			}
+			else
+				System.out.println("Wrong option spcified");		
+		}
+
+		FileReader fr = new FileReader(inputFile);
+		BufferedReader br = new BufferedReader(fr);
+		String s = br.readLine();
+		ms.nodes = Integer.parseInt(s);
+		ms.adj_graph = new int[ms.nodes][ms.nodes];
+		ms.misSet = new boolean[ms.nodes];
+		ms.nodeSet = new node[ms.nodes];
+		ms.mark = new boolean[ms.nodes];
+		ms.rs = new Random[ms.nodes];
+		ms.nval = new long[ms.nodes];
+		
+		while((s = br.readLine()) != null) {
+			for(i=0; i<s.length(); i++)
+				ms.adj_graph[j][i] = Character.digit(s.charAt(i), 10);
+			j++;
+		}
+		
+		ms.initialize();
+			
+		long startTime = System.nanoTime();
+		boolean again = false;
+		do {
+			ms.misForm();
+			again = ms.countNeighbor();
+		}while(again);
+		ms.checkMark();	
+		long finishTime = System.nanoTime();
+		long estimatedTime = finishTime - startTime;
+		System.out.println("Start Time: " + startTime + "\t Finish Time: " + finishTime + "\t Estimated Time: " + estimatedTime);
+
+		ms.printMis(outputFile);
+		
+		if(flag)
+			ms.outputVerifier();
+
+		if(ms.loadValue != 0) {		
+			double sumval=0;
+                        for(i=0; i<ms.nodes; i++)
+                                sumval = sumval + ms.nval[i];
+
+			if(sumval > 0)
+                                System.out.println();
+		}
+	}
+
+	/** Initializes all the fields of the abstract node. */	
+	void initialize() {
+		finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					nodeSet[i] = new node();
+					for(int j=0; j<nodes; j++)
+						if(adj_graph[i][j] == 1)
+							nodeSet[i].neighbors.add(j);
+					rs[i] = new Random(i);		
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Aims to busy the threads by introducing the no-op instructions
+	 * equivalent to the amount of load specified.
+	 *
+	 * @param  weight	Specifies the current load value for a thread.
+	 * @return 		Updated load value.
+	 */	
+	long loadweight(long weight) {
+                long j=0;
+                for(long i=0; i<loadValue; i++)
+                        j++;
+                return j+weight;
+        }
+        
+        /** 
+	 * Aims to count the nodes which are still competing to be part of MIS.
+	 *
+	 * @return	true if there are still nodes competing for MIS.
+	 */
+	boolean countNeighbor() {
+		boolean flag = false;
+		for(int i=0; i<nodes; i++) {
+			if(nodeSet[i].neighbors.size() > 0) {
+				flag = true;
+				break;
+			}
+		}
+		return flag;
+	}
+	
+	/** Aims to create an MIS from a given set of nodes. */
+	void misForm() {
+		finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					nodeSet[i].randomValue = rs[i].nextDouble();
+					for(int j=0; j<nodeSet[i].neighbors.size(); j++)
+						sendVal(nodeSet[i].randomValue, nodeSet[i].neighbors.get(j));
+
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);	
+				}
+			}
+		}
+
+		finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					int j;
+					boolean flag=false;
+					double minId = Integer.MAX_VALUE;
+					for(j=0; j<nodeSet[i].neighborValue.size(); j++)
+						if(minId > nodeSet[i].neighborValue.get(j))
+							minId = nodeSet[i].neighborValue.get(j);
+					
+					if(minId > nodeSet[i].randomValue) {
+						if(nodeSet[i].neighbors.size() > 0) {
+							misSet[i] = true;
+							mark[i] = true;
+						}	
+						for(j=0; j<nodeSet[i].neighbors.size(); j++) {
+							int neighbor = nodeSet[i].neighbors.get(j); 
+							isolated   {	mark[neighbor] = true;	}
+									
+							deleteEdge(neighbor, i);
+							deleteNeighbor(neighbor);
+							deleteEdge(i, neighbor); 
+						}
+					}
+					
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+				}
+			}
+		}
+		
+		finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					if(nodeSet[i].neighbors.size() > 0) {
+						for(int j=0; j<nodeSet[i].deleteQueue.size(); j++) {
+							int nodeDelete = nodeSet[i].deleteQueue.get(j);
+							for(int k=nodeSet[i].neighbors.size()-1; k>=0; k--) {
+								if(nodeDelete == nodeSet[i].neighbors.get(k)) {	
+									nodeSet[i].neighbors.remove(k);
+									break;
+								}
+							}
+						}
+					}
+					
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+				}
+			}
+		}
+		
+		finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					nodeSet[i].deleteQueue.clear();
+					nodeSet[i].neighborValue.clear();
+					
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);
+				}
+			}
+		}				
+	}
+	
+	/** Checks for unmarked nodes and adds them to MIS. */
+	void checkMark() {
+		finish {
+			for(int i=0; i<nodes; i++) {
+				async {
+					if(!mark[i])
+						misSet[i]=true;
+					
+					if(loadValue != 0)
+						nval[i] = loadweight(nval[i]+i);	
+				}		
+			}		
+		}
+	}
+	
+	/** 
+	 * Adding a node to the <code>deleteQueue</code> of target node.
+	 * 
+	 * @param	neighbor	Whose <code>deleteQueue</code> has to be modified.
+	 * @param	sender		Node to be added to the <code>deleteQueue</code>.
+	 */	
+	void deleteEdge(int neighbor, int sender) {
+		isolated { nodeSet[neighbor].deleteQueue.add(sender); }
+	}
+	
+	/** 
+	 * Delete the neighbor of a node.
+	 *
+	 * @param	aNode		Whose neighbors are to be marked for deletion.
+	 */	
+	void deleteNeighbor(int anode) {
+		for(int j=0; j<nodeSet[anode].neighbors.size(); j++) {
+			int neighbor = nodeSet[anode].neighbors.get(j);
+			deleteEdge(neighbor, anode);
+			deleteEdge(anode, neighbor); 
+		}
+	}				 
+	
+	/** 
+	 * Sends the random value to the neighbor.
+	 *
+	 * @param	value		Random value.
+	 * @param	neighbor	Value receiver.
+	 */
+	void sendVal(double value, int neighbor) {
+		isolated { nodeSet[neighbor].neighborValue.add(value); }
+	}
+	
+	/** 
+	 * Writes the output to the user specified file.
+	 * 
+	 * @param  fileName	Name of the file in which output has to be stored.
+	 * @throws 		input output exception if a failure in write occurs.
+	 */
+	void printMis(String fileName) throws IOException {
+  		Writer output = null;
+  		output = new BufferedWriter(new FileWriter(fileName));
+		for(int i=0; i<misSet.length; i++) {
+			if(misSet[i])
+				output.write("\n" + i);
+		}
+		output.close();
+  	}
+  	
+  	/** Validates the output resulting from the execution of the algorithm. */  	
+  	void outputVerifier() {
+		int i;
+		boolean flag = false, setNodes[] = new boolean[nodes];
+		for(i=0; i<misSet.length; i++)
+			if(misSet[i])
+				for(int j=0; j<nodes; j++)
+					if(adj_graph[i][j] == 1)
+						setNodes[j] = true;
+		for(i=0; i<misSet.length; i++)
+			if(misSet[i] && setNodes[i]) {
+				flag = true;
+				break;
+			}
+		if(!flag)
+			System.out.println("Output verified");
+	}
+}
+
+/**
+ * <code>node</code> specifies the structure for each abstract node,
+ * part of the MIS algorithm.
+ */
+class node
+{
+	/** Specifies the random value selected for a node. */
+	double randomValue;
+	
+	/** Specifies the set of neighbors of a node. */
+	ArrayList<Integer> neighbors = new ArrayList<Integer>();
+
+	/** Stores the information about neighors to be deleted. */	
+	ArrayList<Integer> deleteQueue = new ArrayList<Integer>();
+	
+	/** Mailbox to store the received random values of neighbors. */
+	ArrayList<Double> neighborValue = new ArrayList<Double>();
+}

@@ -1,0 +1,66 @@
+KERNEL: vertexColoring.x10
+execution time of IMSuite Benchmark kernel vertexColoring.x10 on two node systems
+ 
+C2:
+PLACE=2
+THREADS=16
+----------
+Base x10 compiler:
+Start Time: 112725226777840	 Finish Time: 112726301249175	 Estimated Time: 1074471335
+Output verified
+ 
+AT-Opt x10 compiler:
+Start Time: 112726637452336	 Finish Time: 112726672698346	 Estimated Time: 35246010
+Output verified
+ 
+C4:
+PLACE=4
+THREADS=8
+----------
+Base x10 compiler:
+Start Time: 112726842817668	 Finish Time: 112727917310550	 Estimated Time: 1074492882
+Output verified
+ 
+AT-Opt x10 compiler:
+Start Time: 112728260909953	 Finish Time: 112728289971720	 Estimated Time: 29061767
+Output verified
+ 
+C8:
+PLACE=8
+THREADS=4
+----------
+Base x10 compiler:
+Start Time: 112728449835733	 Finish Time: 112729511803540	 Estimated Time: 1061967807
+Output verified
+ 
+AT-Opt x10 compiler:
+Start Time: 112729857265169	 Finish Time: 112729892394175	 Estimated Time: 35129006
+Output verified
+ 
+C16:
+PLACE=16
+THREADS=2
+----------
+Base x10 compiler:
+Start Time: 112730077800576	 Finish Time: 112731160159842	 Estimated Time: 1082359266
+Output verified
+ 
+AT-Opt x10 compiler:
+Start Time: 112731491717408	 Finish Time: 112731522195737	 Estimated Time: 30478329
+Output verified
+ 
+C32:
+PLACE=32
+THREADS=1
+----------
+Base x10 compiler:
+Start Time: 112731716660914	 Finish Time: 112732802878354	 Estimated Time: 1086217440
+Output verified
+ 
+AT-Opt x10 compiler:
+Start Time: 112733133588932	 Finish Time: 112733164227783	 Estimated Time: 30638851
+Output verified
+ 
+ 
+-----------------------------------------------------------------------------------------------
+ 

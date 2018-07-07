@@ -1,0 +1,63 @@
+X10 Release 2.6.0
+
+HIGHLIGHTS OF THIS RELEASE
+
+The X10 language now includes an overloading mechanism for redefining
+or extending the behavior of control structures.  For more details,
+refer to the language manual section on user-defined control
+structures or the X10'16 paper "Control Structure Overloading in X10."
+
+The X10 language now supports trailing closures. A trailing closure is
+a closure block that is written and after the parentheses of a
+function call. This closure block is passed as a closure without
+argument to the function. 
+
+To resolve parsing ambiguities, the property keyword is now mandatory
+to introduce property methods.
+
+LIMITATIONS OF THIS RELEASE
+
+The size and index of arrays must be less than 2^31 with Managed X10.
+An attempt to allocate a longer array causes IllegalArgumentException. 
+
+The following features described in the 2.5 language manual do not
+currently work and may be fixed in the subsequent releases:
+  - Non-static type definitions as class or interface members
+    (static type defs do work)
+
+The constraint solver used by X10 typechecker is known to be incomplete 
+for situations in which a constraint implies an infinite number of 
+distinct constraints.
+
+Additionally, the following features described in the language
+manual do not currently work with Native X10.
+  - Non-final generic instance methods
+  - Exception stack traces on Cygwin
+
+The generated C++ code requires g++ 4.2 or better to be compiled; 
+we do almost all of our testing against g++ 4.4.
+  + On Power/Linux and BG/Q, you may either use g++ 4.2 or better
+    or xlC 11.1 or better. 
+
+SUMMARY OF ISSUES RESOLVED IN THIS RELEASE
+
+Below is a summary of JIRA issues addressed for the X10 2.6.0
+
+** New Feature
+    * [XTENLANG-3441] - Parallel iteration using foreach
+
+** Improvement
+    * [XTENLANG-3493] - Use Team collective operations in GML and remove Native-MPI backend
+    * [XTENLANG-3551] - Optimize asyncCopy in ManagedX10
+
+** Bug
+    * [XTENLANG-3497] - Thread.stop(Throwable) throws UnsupportedOperationException since Java 8
+    * [XTENLANG-3546] - Segfault in NativeX10 on upcast of function type
+    * [XTENLANG-3550] - Duplicate method in generated Java
+
+For the details of JIRA issues fixed in this release, see
+  https://xtenlang.atlassian.net/secure/ReleaseNote.jspa?version=10400&projectId=10005
+
+Please use the X10 JIRA to report bugs, after ensuring the problem is
+not already reported:
+  https://xtenlang.atlassian.net/projects/XTENLANG/issues
