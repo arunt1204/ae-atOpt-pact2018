@@ -14,23 +14,22 @@ Our evalutions are done on Linux based Operation system.
 This folder contains a Linux (Ubuntu 16.04) virtual image and a README.md file
 
 
-Hardware pre-requisities:
+Hardware pre-requisities: 
 -------------------------
-Any of the following architectures:
-* Two Intel-based System with each system having 32 cores (32 CPUs). Total 64 cores.
-* Two AMD-based System with each system having 16 cores (16 CPUs). Total 32 cores.
+We recommend the following architectures any of the following architectures:
+* An Intel System with two nodes, each node having 32 cores (32 CPUs). Total 64 cores.
+* An AMD System, with two nodes, each node having 16 cores (16 CPUs). Total 32 cores.
  
 
 Software pre-requisites:
 ------------------------
-1) For Evaluation using Virtual Machine required software are already installed in the 
-provided image.
-A VirtualBox is required to install the image and do evaluation.
+1) For Evaluation using Virtual Machine required software are already installed in the provided image.
+A VirtualBox (from Oracle) is required to install the image and do evaluation.
 
 
 Installation:
 -------------
-1) Create a Virtual Machine via VirtualBox using the image available in the Googleo drive (https://drive.google.com/open?id=1qn2lO5vUWRuujJ-y3cxc3-rJr_G9yq_4).
+1) Download the image (ubuntu-16.ova) from Google drive (https://drive.google.com/open?id=1qn2lO5vUWRuujJ-y3cxc3-rJr_G9yq_4) and import it in the virtual box.
 
 2) Login Credentials for Virtual Machine:
 	- User Name: ubuntu-16
@@ -69,58 +68,56 @@ Some notations:
 
 Running the Evaluations:
 ------------------------
-Both the "base" and "at-Opt" compilers were build already in the Virtual Machine. Hence, we now directly 
-proceed for the kernel evaluation.
 
+* Start the ubuntu-16 virtual machine.
 
-To run for two systems with total cores 64 (for Figure 15a in paper):
-* Open a new terminal. Run the command 1 in terminal. "$ cd ./Documents/Artifact-Evaluation-VM/script".
+* Open a new terminal and run the below commands. "$ cd $ATHOME/script".
 
-* Run the script "eval_64.sh" using the command $ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>
-	- eg1: $ sudo bash eval_64.sh bfsBellmanFord intel1 intel2 speedup
-	- eg2: $ sudo bash eval_64.sh all localhost localhost speedup
+* For establishing the impact of AT-Opt, when the programs are run on a 64 core machine (similar to the setup used for Figure 15a): "$ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>"
+	- eg1: $ sudo bash eval_64.sh all localhost localhost speedup  
+	- eg2: $ sudo bash eval_64.sh bfsBellmanFord intel1 intel2 speedup
 	- eg3: $ sudo bash eval_64.sh mis intel1 intel2 timestamp
- 
+	- On our personal laptop (intel-i7 processor, 4 cores and 16GB RAM), the script took around one hour to complete.
 
-
-To run for two systems with total cores 32 (for Figure 15b in paper):
-* Open a new terminal. Run the command in 1 terminal. "$ cd ./Documents/Artifact-Evaluation-VM/script".
-
-* Run the script "eval_32.sh" using the command $ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>
-	- eg1: $ sudo bash eval_32.sh bfsDijkstra amd1 amd2 speedup
-	- eg2: $ sudo bash eval_32.sh all localhost localhost speedup
+* For establishing the impact of AT-Opt, when the programs are run on a 32 core machine (similar to the setup used for Figure 15b): "$ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>"
+	- eg1: $ sudo bash eval_32.sh all localhost localhost speedup
+	- eg2: $ sudo bash eval_32.sh bfsDijkstra amd1 amd2 speedup 
 	- eg3: $ sudo bash eval_32.sh mst amd1 amd2 timestamp
+	- On our laptop, the script took around 40 minute to complete.
 
+* To establish the impact of AT-Opt when the programs are run on a single node 32 core machine: "$ sudo bash eval_ser_data.sh <kernel_name>"
 
-
-To calculate the total amount of data serialized acrossed AT calls (for Figure 14 in paper):
-* Open a new terminal. Run the command 1 in terminal. "$ cd ./Documents/Artifact-Evaluation-VM/script".
-
-* Run the command 2 in the terminal. "$ sudo bash eval_ser_data.sh <kernel_name>"
+* To establish the results shown in Figure 14: "$ sudo bash eval_ser_data.sh all". 
 	- eg1: $ sudo bash eval_ser_data.sh bfsBellmanFord
 	- eg2: $ sudo bash eval_ser_data.sh all
+	- On our laptop, the script took around five hours to complete for all kernels.
 
-* Few kernels ( like BY, DR, DS, HS, LCR and MST) have more amount of "AT" calls. Hence, the 
-total amount of time to calculate the amount of serialized data for all kernels will take an average time
-of 5-6 hours.
+* For the sake of convenience, we have kept the generated result's files at $ATHOME/sample-results
 
 
-Note: Two systems (intel1 and intel2 (or) amd1 and amd2) should be able to communicate each other 
+Note: Two nodes (intel1 and intel2 (or) amd1 and amd2) should be able to communicate each other 
 without any permission requests. Reason: During kernel executions program control shifts between these
 two nodes. Hence, care should be taken such that permission request/denied shoudn't be prompted to make control shits. 	
 
 Validation of results:
 ----------------------
-The output files are available in the folder /Documents/Artifact-Evaluation-VM/Result.
+The scripts execute each kernel for varying number of places
+(C2 to C64, when total number of cores = 64, and C2 to C32,
+when the total number of cores = 32). For each kernel we note
+two execution times: execution time when executing code
+compiled with Base and that when compiled with AT-Opt.
 
-(i) A kernel is evaluated for varying number of places from C2 to C64 (for 64 total cores) or C2 to C32 (for 32 total cores).
+* The output files (execution times + speedup + serialized data) are in the folder $ cd $ATHOME/Results .
 
-(ii) "64/32_cores" folder: <kernel_name>_timestamp.txt file shows the start time, finish time and total execution time of a kernel for varying places (C2 to C64).
+* The following command lists the speedups obtained for each kernel when evaluated on the VM assuming 64 cores:
+	- $ cd $ATHOME/Results
+	- $ grep "Speedup" 64_cores/all_kernels_speedup.txt | less
+	- While the speedups listed above may not exactly match that shown in Section 7, the numbers are still indicative. For example, for BF, DR, DST, DP, MIS, MST and VC the gains are very high. And for KC, HS, LCR the gains are between 1x to 2x.
 
-(iii) "64/32_cores" folder: <kernel_name>_speedup.txt file shows total execution time of a kernel and obtained speedups for varying places (C2 to C64) as shown in the figure 15a and 15b.
-
-(iv) "data_serialized" folder: <kernel_name>_data_serialized.txt file shows the total "AT" calls made during run-time, and total amount of data serialized for base and AT-Opt x10 compiler.
-
+* Reduction in serialized data: all_data_serialized.txt file shows the total "AT" calls made during run-time, and total amount of data serialized by the code compiled using
+Base and AT-Opt compilers (columns 4, 5 and 6 of Figure 14). For example the following commands will output the data of those columns.	
+	- cd $ATHOME/Results
+	- egrep "KERNEL|Dynamic|compiler" 64_cores/all_data_serialized.txt | less
 
 Notes/Troubleshooting:
 ----------------------
@@ -130,11 +127,14 @@ Notes/Troubleshooting:
 	- For no two systems available: give both <HOST1_NAME> and <HOST2_NAME> value as "localhost".
 	- Lesser cores (CPUs) in a system: run the same command as it is. It may have an impact on the obtained speedup shown in the paper.
 
-* For some cases, while running the kernels the compiler may throw "host not found" or "place exceptions" 
-in both the x10 base and x10 AT-Opt compiler. It is a noted bug in the existing compiler. 
-Hence, for such cases re-run the script for the individual kernel alone.
+* For some cases, while running the kernels the compiler
+may throw "host not found" or "place exceptions" in
+both the Base and AT-Opt compiler. It is a known bug
+with X10 runtime. For such cases, re-run the script for
+the individual kernel alone.
 
-* We recommend to re-run the script for the individual kernel for other issues as well.
+* In case of any doubts/issues, please report it to the
+authors.
 
 
 
