@@ -5,7 +5,38 @@ KERNEL=$1
 PATH_FOLDER=$2
 
 echo "KERNEL: $KERNEL.x10"
-echo "Amount of serialized data across all place-change operations of IMSuite Benchmark kernel $KERNEL.x10"
+
+#not part of computation
+FIGURE_NAME=""
+if [ "$KERNEL" = "dijkstraRouting" ]; then
+	FIGURE_NAME="DR-256"
+elif [ "$KERNEL" = "vertexColoring" ]; then
+	FIGURE_NAME="VC-256"
+elif [ "$KERNEL" = "byzantine" ]; then
+	FIGURE_NAME="BY-128"
+elif [ "$KERNEL" = "leader_elect_hs" ]; then
+	FIGURE_NAME="HS-256"
+elif [ "$KERNEL" = "leader_elect_lcr" ]; then
+	FIGURE_NAME="LCR-256"
+elif [ "$KERNEL" = "bfsBellmanFord" ]; then
+	FIGURE_NAME="BF-256"
+elif [ "$KERNEL" = "bfsDijkstra" ]; then
+	FIGURE_NAME="DST-256"
+elif [ "$KERNEL" = "dominatingSet" ]; then
+	FIGURE_NAME="DS-256"
+elif [ "$KERNEL" = "kcommitte" ]; then
+	FIGURE_NAME="KC-256"
+elif [ "$KERNEL" = "leader_elect_dp" ]; then
+	FIGURE_NAME="DP-256"
+elif [ "$KERNEL" = "vertexColoring" ]; then
+	FIGURE_NAME="LCR-256"
+elif [ "$KERNEL" = "mis" ]; then
+	FIGURE_NAME="MIS-256"
+elif [ "$KERNEL" = "mst" ]; then
+	FIGURE_NAME="MST-256"
+fi
+
+echo "Amount of serialized data across all place-change operations of IMSuite Benchmark kernel $KERNEL.x10 (FIGURE_NAME)"
 
 #compiling part
 KERNEL_FILE=$KERNEL".x10"
