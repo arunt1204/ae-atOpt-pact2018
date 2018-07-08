@@ -85,7 +85,8 @@ Running the Evaluations:
 	- eg3: $ sudo bash eval_32.sh mst amd1 amd2 timestamp
 	- On our laptop, the script took around 40 minute to complete.
 
-* To establish the impact of AT-Opt when the programs are run on a single node 32 core machine: "$ sudo bash eval_ser_data.sh <kernel_name>"
+* To establish the impact of AT-Opt when the programs are run on a single node 32 core machine: "$ sudo ./eval_32_one.sh <kernel_name> <HOST1_NAME> <timestamp or speedup>"
+	- eg1: $ sudo bash eval_32_one.sh all localhost speedup
 
 * To establish the results shown in Figure 14: "$ sudo bash eval_ser_data.sh all". 
 	- eg1: $ sudo bash eval_ser_data.sh bfsBellmanFord
