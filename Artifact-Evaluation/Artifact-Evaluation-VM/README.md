@@ -135,9 +135,5 @@ with X10 runtime. For such cases, re-run the script for
 the individual kernel alone.
 
 * In case of any doubts/issues, please report it to the
-authors.
-
-
-
-If anything in unclear, or any unexpected results occur, please report it to the authors.				
+authors.			
 		

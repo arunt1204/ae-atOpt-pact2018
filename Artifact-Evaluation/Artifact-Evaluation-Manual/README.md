@@ -118,16 +118,23 @@ two nodes. Hence, care should be taken such that permission request/denied shoud
 
 Validation of results:
 ----------------------
-The output files are available in the folder /Artifact-Evaluation-for-AT-Opt-PACT-2018-paper/Artifact-Evaluation-VM/Results.
+The scripts execute each kernel for varying number of places
+(C2 to C64, when total number of cores = 64, and C2 to C32,
+when the total number of cores = 32). For each kernel we note
+two execution times: execution time when executing code
+compiled with Base and that when compiled with AT-Opt.
 
-(i) A kernel is evaluated for varying number of places from C2 to C64 (for 64 total cores) or C2 to C32 (for 32 total cores).
+* The output files (execution times + speedup + serialized data) are in the folder $ cd $ATHOME/Results .
 
-(ii) "64/32_cores" folder: <kernel_name>_timestamp.txt file shows the start time, finish time and total execution time of a kernel for varying places (C2 to C64).
+* The following command lists the speedups obtained for each kernel when evaluated on the VM assuming 64 cores:
+	- $ cd $ATHOME/Results
+	- $ grep "Speedup" 64_cores/all_kernels_speedup.txt | less
+	- While the speedups listed above may not exactly match that shown in Section 7, the numbers are still indicative. For example, for BF, DR, DST, DP, MIS, MST and VC the gains are very high. And for KC, HS, LCR the gains are between 1x to 2x.
 
-(iii) "64/32_cores" folder: <kernel_name>_speedup.txt file shows total execution time of a kernel and obtained speedups for varying places (C2 to C64) as shown in the figure 15a and 15b.
-
-(iv) "data_serialized" folder: <kernel_name>_data_serialized.txt file shows the total "AT" calls made during run-time, and total amount of data serialized for base and AT-Opt x10 compiler.
-
+* Reduction in serialized data: all_data_serialized.txt file shows the total "AT" calls made during run-time, and total amount of data serialized by the code compiled using
+Base and AT-Opt compilers (columns 4, 5 and 6 of Figure 14). For example the following commands will output the data of those columns.	
+	- cd $ATHOME/Results
+	- egrep "KERNEL|Dynamic|compiler" 64_cores/all_data_serialized.txt | less
 
 Notes/Troubleshooting:
 ----------------------
@@ -137,13 +144,11 @@ Notes/Troubleshooting:
 	- For no two systems available: give both <HOST1_NAME> and <HOST2_NAME> value as "localhost".
 	- Lesser cores (CPUs) in a system: run the same command as it is. It may have an impact on the obtained speedup shown in the paper.
 
-* For some cases, while running the kernels the compiler may throw "host not found" or "place exceptions" 
-in both the x10 base and x10 AT-Opt compiler. It is a noted bug in the existing compiler. 
-Hence, for such cases re-run the script for the individual kernel alone.
+* For some cases, while running the kernels the compiler
+may throw "host not found" or "place exceptions" in
+both the Base and AT-Opt compiler. It is a known bug
+with X10 runtime. For such cases, re-run the script for
+the individual kernel alone.
 
-* We recommend to re-run the script for the individual kernel for other issues as well.
-
-
-
-If anything in unclear, or any unexpected results occur, please report it to the authors.				
-		
+* In case of any doubts/issues, please report it to the
+authors.
