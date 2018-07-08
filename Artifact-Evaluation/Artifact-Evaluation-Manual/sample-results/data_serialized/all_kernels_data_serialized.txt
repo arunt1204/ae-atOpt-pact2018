@@ -1,0 +1,132 @@
+KERNEL: bfsBellmanFord.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel bfsBellmanFord.x10
+ 
+Total Dynamic AT calls made: 6403
+ 
+Amount of data serialized in Base x10 compiler: 3.00 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .12 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: bfsDijkstra.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel bfsDijkstra.x10
+ 
+Total Dynamic AT calls made: 15660
+ 
+Amount of data serialized in Base x10 compiler: 7.39 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .50 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: byzantine.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel byzantine.x10
+ 
+Total Dynamic AT calls made: 550254
+ 
+Amount of data serialized in Base x10 compiler: 68.08 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .25 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: dijkstraRouting.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel dijkstraRouting.x10
+ 
+Total Dynamic AT calls made: 489944
+ 
+Amount of data serialized in Base x10 compiler: 120.07 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .39 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: dominatingSet.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel dominatingSet.x10
+ 
+Total Dynamic AT calls made: 542730
+ 
+Amount of data serialized in Base x10 compiler: 140.09 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .26 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: kcommitte.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel kcommitte.x10
+ 
+Total Dynamic AT calls made: 84178
+ 
+Amount of data serialized in Base x10 compiler: .32 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .16 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: leader_elect_dp.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel leader_elect_dp.x10
+ 
+Total Dynamic AT calls made: 68651
+ 
+Amount of data serialized in Base x10 compiler: 32.18 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .15 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: leader_elect_hs.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel leader_elect_hs.x10
+ 
+Total Dynamic AT calls made: 400477
+ 
+Amount of data serialized in Base x10 compiler: 1.01 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .22 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: leader_elect_lcr.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel leader_elect_lcr.x10
+ 
+Total Dynamic AT calls made: 197639
+ 
+Amount of data serialized in Base x10 compiler: .47 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .09 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: mis.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel mis.x10
+ 
+Total Dynamic AT calls made: 18814
+ 
+Amount of data serialized in Base x10 compiler: 8.94 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .13 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: mst.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel mst.x10
+ 
+Total Dynamic AT calls made: 193103
+ 
+Amount of data serialized in Base x10 compiler: 76.48 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: 10.32 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: vertexColoring.x10
+Amount of serialized data across all place-change operations of IMSuite Benchmark kernel vertexColoring.x10
+ 
+Total Dynamic AT calls made: 5126
+ 
+Amount of data serialized in Base x10 compiler: 2.27 GB
+ 
+Amount of data serialized in AT-Opt x10 compiler: .12 GB
+ 
+-----------------------------------------------------------------------------------------------
+ 

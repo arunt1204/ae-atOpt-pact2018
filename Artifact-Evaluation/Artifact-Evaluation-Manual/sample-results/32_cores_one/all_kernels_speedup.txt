@@ -1,0 +1,188 @@
+KERNEL: bfsBellmanFord.x10
+execution of IMSuite Benchmark kernel bfsBellmanFord.x10 on a system
+ 
+C2:
+PLACE=2
+THREADS=16
+----------
+Base x10 compiler:
+Execution time: 1730985650
+ 
+AT-Opt x10 compiler:
+Execution time: 69744765
+ 
+Obtained Speedup (C2) for BF-256 = 1730985650 / 69744765 = 24.81 times
+ 
+C4:
+PLACE=4
+THREADS=8
+----------
+Base x10 compiler:
+Execution time: 1920807695
+ 
+AT-Opt x10 compiler:
+Execution time: 65766744
+ 
+Obtained Speedup (C4) for BF-256 = 1920807695 / 65766744 = 29.20 times
+ 
+C8:
+PLACE=8
+THREADS=4
+----------
+Base x10 compiler:
+Execution time: 1935961225
+ 
+AT-Opt x10 compiler:
+Execution time: 70309194
+ 
+Obtained Speedup (C8) for BF-256 = 1935961225 / 70309194 = 27.53 times
+ 
+C16:
+PLACE=16
+THREADS=2
+----------
+Base x10 compiler:
+Execution time: 1995618024
+ 
+AT-Opt x10 compiler:
+Execution time: 63961538
+ 
+Obtained Speedup (C16) for BF-256 = 1995618024 / 63961538 = 31.20 times
+ 
+C32:
+PLACE=32
+THREADS=1
+----------
+Base x10 compiler:
+Execution time: 1697346403
+ 
+AT-Opt x10 compiler:
+Execution time: 71271185
+ 
+Obtained Speedup (C32) for BF-256 = 1697346403 / 71271185 = 23.81 times
+ 
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: bfsDijkstra.x10
+execution of IMSuite Benchmark kernel bfsDijkstra.x10 on a system
+ 
+C2:
+PLACE=2
+THREADS=16
+----------
+Base x10 compiler:
+Execution time: 4913334164
+ 
+AT-Opt x10 compiler:
+Execution time: 695403513
+ 
+Obtained Speedup (C2) for DST-256 = 4913334164 / 695403513 = 7.06 times
+ 
+C4:
+PLACE=4
+THREADS=8
+----------
+Base x10 compiler:
+Execution time: 4758137052
+ 
+AT-Opt x10 compiler:
+Execution time: 685824382
+ 
+Obtained Speedup (C4) for DST-256 = 4758137052 / 685824382 = 6.93 times
+ 
+C8:
+PLACE=8
+THREADS=4
+----------
+Base x10 compiler:
+Execution time: 4592239755
+ 
+AT-Opt x10 compiler:
+Execution time: 695948920
+ 
+Obtained Speedup (C8) for DST-256 = 4592239755 / 695948920 = 6.59 times
+ 
+C16:
+PLACE=16
+THREADS=2
+----------
+Base x10 compiler:
+Execution time: 4569711818
+ 
+AT-Opt x10 compiler:
+Execution time: 670393889
+ 
+Obtained Speedup (C16) for DST-256 = 4569711818 / 670393889 = 6.81 times
+ 
+C32:
+PLACE=32
+THREADS=1
+----------
+Base x10 compiler:
+Execution time: 5207191427
+ 
+AT-Opt x10 compiler:
+Execution time: 687307428
+ 
+Obtained Speedup (C32) for DST-256 = 5207191427 / 687307428 = 7.57 times
+ 
+ 
+-----------------------------------------------------------------------------------------------
+ 
+KERNEL: byzantine.x10
+execution of IMSuite Benchmark kernel byzantine.x10 on a system
+ 
+C2:
+PLACE=2
+THREADS=16
+----------
+Base x10 compiler:
+Execution time: 65023093996
+ 
+AT-Opt x10 compiler:
+Execution time: 7756488546
+ 
+Obtained Speedup (C2) for BY-128 = 65023093996 / 7756488546 = 8.38 times
+ 
+C4:
+PLACE=4
+THREADS=8
+----------
+Base x10 compiler:
+Execution time: 97697127111
+ 
+AT-Opt x10 compiler:
+Execution time: 7917862752
+ 
+Obtained Speedup (C4) for BY-128 = 97697127111 / 7917862752 = 12.33 times
+ 
+C8:
+PLACE=8
+THREADS=4
+----------
+Base x10 compiler:
+Execution time: 64237152310
+ 
+AT-Opt x10 compiler:
+Execution time: 8117507621
+ 
+Obtained Speedup (C8) for BY-128 = 64237152310 / 8117507621 = 7.91 times
+ 
+C16:
+PLACE=16
+THREADS=2
+----------
+Base x10 compiler:
+Execution time: 64238086739
+ 
+AT-Opt x10 compiler:
+Execution time: 7880379742
+ 
+Obtained Speedup (C16) for BY-128 = 64238086739 / 7880379742 = 8.15 times
+ 
+C32:
+PLACE=32
+THREADS=1
+----------
+Base x10 compiler:
