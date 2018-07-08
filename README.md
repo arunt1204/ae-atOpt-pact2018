@@ -13,19 +13,18 @@ Our evalutions are done on Linux based Operation system.
 
 Hardware pre-requisities:
 -------------------------
-Any of the following architectures:
-* Two Intel-based System with each system having 32 cores (32 CPUs). Total 64 cores.
-* Two AMD-based System with each system having 16 cores (16 CPUs). Total 32 cores.
+We recommend the following architectures any of the following architectures:
+* An Intel System with two nodes, each node having 32 cores (32 CPUs). Total 64 cores.
+* An AMD System, with two nodes, each node having 16 cores (16 CPUs). Total 32 cores.
  
 
 
 Software pre-requisites:
 ------------------------
-1) For Evaluation using Virtual Machine required software are already installed in the 
-provided image.
-A VirtualBox is required to install the image and do evaluation.   
+1) For Evaluation using Virtual Machine required software are already installed in the provided image.
+A VirtualBox (from Oracle) is required to install the image and do evaluation. 
 
-2) For Manual evalution, the below required software needs to be installed in any one of the system.
+2) For Manual evalution, the below required software needs to be installed in the system.
 * g++ (preferred version 5.4.0)
 * Apache ant software (preferred version 1.9.6 )
 * Java software
@@ -47,13 +46,6 @@ Installation, Execution and Validation of results:
 3) For Evaluating AT-Opt technique againt varing input sizes (not discussed in the paper), look at 
 web page http://www.cse.iitm.ac.in/~krishna/imsuite/. In the ./Artifact-Evaluation-VM folder,  "x10-base" folder is 
 the baseline compiler and "x10-atOpt" folder is the AT-Opt compiler (has our techniques implemented).  
-
-
-Troubleshooting:
-----------------
-(1) For some cases, while running the kernels the compiler may throw "host not found" or "place exceptions" 
-in both the x10 base and x10 AT-Opt compiler. It is a noted bug in the existing compiler. 
-Hence, for such cases re-run the script for the individual kernel alone.
 
 
 If anything in unclear, or any unexpected results occur, please report it to the authors.
