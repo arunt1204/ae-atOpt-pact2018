@@ -16,14 +16,14 @@ This folder contains 7 sub-folders and a README.md file
 
 Hardware pre-requisities:
 -------------------------
-Any of the following architectures:
-* Two Intel-based System with each system having 32 cores (32 CPUs). Total 64 cores.
-* Two AMD-based System with each system having 16 cores (16 CPUs). Total 32 cores.
+We recommend the following architectures any of the following architectures:
+* An Intel System with two nodes, each node having 32 cores (32 CPUs). Total 64 cores.
+* An AMD System, with two nodes, each node having 16 cores (16 CPUs). Total 32 cores.
  
 
 Software pre-requisites:
 ------------------------
-1) For Manual evalution, the below required software needs to be installed in any one of the system.
+1) For Manual evalution, the below required software needs to be installed in the system.
 * g++ (preferred version 5.4.0)
 * Apache ant software (preferred version 1.9.6 )
 * Java software
@@ -63,69 +63,55 @@ Some notations:
 
 Installation:
 -------------
-* Firstly, we need to build both the "base" and "AT-Opt" x10 compiler.
+Ensure the required Software pre-requisites are installed in the system. Steps to download and build the compilers:
 
-* Ensure the required Software pre-requisites are installed in the system.
+* Open a new terminal and run the below commands.
 
-* Building base x10 compiler:
-	-  Open a new terminal and navigate to "Artifact-Evaluation-for-AT-Opt-PACT-2018-paper" folder.
-	-  Run the command in terminal. "$ cd ./Artifact-Evaluation/Artifact-Evaluation-Manual/script".
-	-  Run the script "build_x10_base.sh" using command "$ bash build_x10_base.sh". 
-	-  Run the script "build_x10_base_SB.sh" using command "$ bash build_x10_base_SB.sh".
+* "$ git clone https://github.com/arunt1204/ae-atOpt-pact2018.git"
+
+* Let $ATHOME = path to ae-atOpt-pact2018 folder/Artifact-Evaluation/Artifact-Evaluation-Manual
+
+* In terminal enter $ cd $ATHOME/script
+
+* Building base x10 compilers:
+	-  "$ bash build_x10_base.sh". 
+	-  "$ bash build_x10_base_SB.sh".
 	-  Average Build time should take around 14-15 minutes.
 
-* Building AT-Opt x10 compiler:
-	-  Open a new terminal and navigate to "Artifact-Evaluation-for-AT-Opt-PACT-2018-paper" folder.
-	-  Run the command in terminal. "$ cd ./Artifact-Evaluation/Artifact-Evaluation-Manual/script".
-	-  Run the script "build_x10_AT_Opt.sh" using command "$ bash build_x10_AT_Opt.sh". 
-	-  Run the script "build_x10_AT_Opt_SB.sh" using command "$ bash build_x10_AT_Opt_SB.sh".
+* Building AT-Opt x10 compilers:
+	-  "$ bash build_x10_AT_Opt.sh". 
+	-  "$ bash build_x10_AT_Opt_SB.sh".
 	-  Average Build time should take around 14-15 minutes.
 
 
 Running the Evaluations:
 ------------------------
-Once the "base" and "at-Opt" compilers are build in the System. We can 
-proceed for the kernel evaluation.
+* Open a new terminal and run the below commands. "$ cd $ATHOME/script".
 
-To run for two systems with total cores 64 (for Figure 15a in paper):
-* Open a new terminal and navigate to "Artifact-Evaluation-for-AT-Opt-PACT-2018-paper" folder.
-
-* Run the command in terminal. "$ cd ./Artifact-Evaluation/Artifact-Evaluation-Manual/script".
-
-* Run the script "eval_64.sh" using the command $ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>
-	- eg1: $ sudo bash eval_64.sh bfsBellmanFord intel1 intel2 speedup
-	- eg2: $ sudo bash eval_64.sh all localhost localhost speedup
+* For establishing the impact of AT-Opt, when the programs are run on a 64 core machine (similar to the setup used for Figure 15a): "$ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>"
+	- eg1: $ sudo bash eval_64.sh all localhost localhost speedup  
+	- eg2: $ sudo bash eval_64.sh bfsBellmanFord intel1 intel2 speedup
 	- eg3: $ sudo bash eval_64.sh mis intel1 intel2 timestamp
- 
+	- On our personal laptop (intel-i7 processor, 4 cores and 16GB RAM), the script took around one hour to complete.
 
-
-To run for two systems with total cores 32 (for Figure 15b in paper):
-* Open a new terminal and navigate to "Artifact-Evaluation-for-AT-Opt-PACT-2018-paper" folder.
-
-* Run the command in terminal. "$ cd ./Artifact-Evaluation/Artifact-Evaluation-Manual/script".
-
-* Run the script "eval_32.sh" using the command $ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>
-	- eg1: $ sudo bash eval_32.sh bfsDijkstra amd1 amd2 speedup
-	- eg2: $ sudo bash eval_32.sh all localhost localhost speedup
+* For establishing the impact of AT-Opt, when the programs are run on a 32 core machine (similar to the setup used for Figure 15b): "$ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>"
+	- eg1: $ sudo bash eval_32.sh all localhost localhost speedup
+	- eg2: $ sudo bash eval_32.sh bfsDijkstra amd1 amd2 speedup 
 	- eg3: $ sudo bash eval_32.sh mst amd1 amd2 timestamp
+	- On our laptop, the script took around 40 minute to complete.
 
+* To establish the impact of AT-Opt when the programs are run on a single node 32 core machine: "$ sudo ./eval_32_one.sh <kernel_name> <HOST1_NAME> <timestamp or speedup>"
+	- eg1: $ sudo bash eval_32_one.sh all localhost speedup
 
-
-To calculate the total amount of data serialized acrossed AT calls (for Figure 14 in paper):
-* Open a new terminal and navigate to "Artifact-Evaluation-for-AT-Opt-PACT-2018-paper" folder.
-
-* Run the command 1 in terminal. "$ cd ./Artifact-Evaluation/Artifact-Evaluation-Manual/script".
-
-* Run the command 2 in the terminal. "$ sudo bash eval_ser_data.sh <kernel_name>"
+* To establish the results shown in Figure 14: "$ sudo bash eval_ser_data.sh all". 
 	- eg1: $ sudo bash eval_ser_data.sh bfsBellmanFord
 	- eg2: $ sudo bash eval_ser_data.sh all
+	- On our laptop, the script took around five hours to complete for all kernels.
 
-* Few kernels ( like BY, DR, DS, HS, LCR and MST) have more amount of "AT" calls. Hence, the 
-total amount of time to calculate the amount of serialized data for all kernels will take an average time
-of 5-6 hours. 
-	
+* For the sake of convenience, we have kept the generated result's files at $ATHOME/sample-results
 
-Note: Two systems (intel1 and intel2 (or) amd1 and amd2) should be able to communicate each other 
+
+Note: Two nodes (intel1 and intel2 (or) amd1 and amd2) should be able to communicate each other 
 without any permission requests. Reason: During kernel executions program control shifts between these
 two nodes. Hence, care should be taken such that permission request/denied shoudn't be prompted to make control shits. 
 
