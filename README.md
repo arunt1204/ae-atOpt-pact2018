@@ -39,13 +39,13 @@ Benchmarks:
 
 Installation, Execution and Validation of results:
 --------------------------------------------------
-1) For Evaluation using Virtual Machine see README.md file in ./Artifact-Evaluation-VM folder
+1) For Evaluation using Virtual Machine see README.md file in ./AE/VM folder
 
-2) For Evaluation using Manual method see README.md file in ./Artifact-Evaluation-Manual folder
+2) For Evaluation using Manual method see README.md file in ./AE/Manual folder
 
 3) For Evaluating AT-Opt technique againt varing input sizes (not discussed in the paper), look at 
-web page http://www.cse.iitm.ac.in/~krishna/imsuite/. In the ./Artifact-Evaluation-VM folder,  "x10-base" folder is 
-the baseline compiler and "x10-atOpt" folder is the AT-Opt compiler (has our techniques implemented).  
+web page http://www.cse.iitm.ac.in/~krishna/imsuite/. In the ./AE/Manual folder,  "x10-base" folder is 
+the baseline compiler (after bulid) and "x10-atOpt" (after build) folder is the AT-Opt compiler (has our techniques implemented).  
 
 
 If anything in unclear, or any unexpected results occur, please report it to the authors.
