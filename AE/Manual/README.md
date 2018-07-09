@@ -69,7 +69,7 @@ Ensure the required Software pre-requisites are installed in the system. Steps t
 
 * "$ git clone https://github.com/arunt1204/ae-atOpt-pact2018.git"
 
-* Let $ATHOME = path to ae-atOpt-pact2018 folder/Artifact-Evaluation/Artifact-Evaluation-Manual
+* export ATHOME=$(pwd)/ae-atOpt-pact2018/AE/Manual
 
 * In terminal enter $ cd $ATHOME/script
 
