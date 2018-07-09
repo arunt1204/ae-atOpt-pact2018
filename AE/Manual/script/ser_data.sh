@@ -36,7 +36,7 @@ elif [ "$KERNEL" = "mst" ]; then
 	FIGURE_NAME="MST-256"
 fi
 
-echo "Amount of serialized data across all place-change operations of IMSuite Benchmark kernel $KERNEL.x10 (FIGURE_NAME)"
+echo "Amount of serialized data across all place-change operations of IMSuite Benchmark kernel $KERNEL.x10 ($FIGURE_NAME)"
 
 #compiling part
 KERNEL_FILE=$KERNEL".x10"
