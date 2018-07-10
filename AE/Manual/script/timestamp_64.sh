@@ -51,7 +51,7 @@ fi
 if [ $# -eq 3 ]; then
 	echo "execution of IMSuite Benchmark kernel $KERNEL.x10 ($FIGURE_NAME) on one node system"
 	host1=$2
-	PATH_FOLDER=$4
+	PATH_FOLDER=$3
 	echo "$host1" > hostnames.txt
 fi
 
