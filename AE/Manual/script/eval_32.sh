@@ -63,7 +63,7 @@ if [ "$4" = "timestamp" ]; then
 elif [ "$4" = "speedup" ]; then
 	if [ "$BENCHMARK" = "all" ]; then
 		echo "Executing for bfsBellmanFord:"
-		$BASHPATH speedup_32.sh "bfsBellmanFord" $HOST1 $HOST2 $HOME_PATH > ./Results/32_cores/all_speedup.txt
+		$BASHPATH speedup_32.sh "bfsBellmanFord" $HOST1 $HOST2 $HOME_PATH | tee ./Results/32_cores/all_speedup.txt
 		echo "Executing for bfsDijkstra:"
 		$BASHPATH speedup_32.sh "bfsDijkstra" $HOST1 $HOST2 $HOME_PATH | tee -a ./Results/32_cores/all_speedup.txt
 		echo "Executing for byzantine:"
@@ -89,7 +89,7 @@ elif [ "$4" = "speedup" ]; then
 	elif [ "$BENCHMARK" = "bfsBellmanFord" ] || [ "$BENCHMARK" = "bfsDijkstra" ] || [ "$BENCHMARK" = "dominatingSet" ] || [ "$BENCHMARK" = "kcommitte" ] || [ "$BENCHMARK" = "leader_elect_dp" ] || 	[ "$BENCHMARK" = "mis" ] || [ "$BENCHMARK" = "mst" ] || [ "$BENCHMARK" = "dijkstraRouting" ] || [ "$BENCHMARK" = "vertexColoring" ] || [ "$BENCHMARK" = "byzantine" ] || [ "$BENCHMARK" = 	"leader_elect_hs" ] || [ "$BENCHMARK" = "leader_elect_lcr" ]; then
 		FILE_TEMP2=$BENCHMARK"_speedup.txt"
 		echo "Executing for $BENCHMARK:"
-		$BASHPATH speedup_32.sh $BENCHMARK $HOST1 $HOST2 $HOME_PATH > ./Results/32_cores/$FILE_TEMP2
+		$BASHPATH speedup_32.sh $BENCHMARK $HOST1 $HOST2 $HOME_PATH | tee ./Results/32_cores/$FILE_TEMP2
 	else 
 		echo "Benchmark name is incorrect"
 	fi
