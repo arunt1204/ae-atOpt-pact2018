@@ -18,7 +18,7 @@ if [ $# -eq 4 ]; then
 fi
 
 if [ $# -eq 3 ]; then
-	echo "execution of IMSuite Benchmark kernel $KERNEL.x10 on a system"
+	echo "Speedup of IMSuite Benchmark kernel $KERNEL.x10 on a system"
 	host1=$2
 	PATH_FOLDER=$3
 	echo "$host1" > hostnames.txt

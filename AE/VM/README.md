@@ -118,7 +118,7 @@ compiled with Base and that when compiled with AT-Opt.
 * Reduction in serialized data: all_data_serialized.txt file shows the total "AT" calls made during run-time, and total amount of data serialized by the code compiled using
 Base and AT-Opt compilers (columns 4, 5 and 6 of Figure 14). For example the following commands will output the data of those columns.	
 	- cd $ATHOME/Results
-	- egrep "KERNEL|Dynamic|compiler" 64_cores/all_data_serialized.txt | less
+	- egrep "KERNEL|Dynamic|compiler" data_serialized/all_data_serialized.txt | less
 
 Notes/Troubleshooting:
 ----------------------
