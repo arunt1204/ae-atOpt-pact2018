@@ -88,19 +88,19 @@ Running the Evaluations:
 ------------------------
 * Open a new terminal and run the below commands. "$ cd $ATHOME/script".
 
-* For establishing the impact of AT-Opt, when the programs are run on a 64 core machine (similar to the setup used for Figure 15a): "$ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>"
+* For establishing the impact of AT-Opt, when the programs are run on a 64 core machine (similar to the setup used for Figure 15a): "$ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp / speedup>"
 	- eg1: $ sudo bash eval_64.sh all localhost localhost speedup  
 	- eg2: $ sudo bash eval_64.sh bfsBellmanFord intel1 intel2 speedup
 	- eg3: $ sudo bash eval_64.sh mis intel1 intel2 timestamp
 	- On our personal laptop (intel-i7 processor, 4 cores and 16GB RAM), the script took around one hour to complete.
 
-* For establishing the impact of AT-Opt, when the programs are run on a 32 core machine (similar to the setup used for Figure 15b): "$ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp or speedup>"
+* For establishing the impact of AT-Opt, when the programs are run on a 32 core machine (similar to the setup used for Figure 15b): "$ sudo bash eval_64.sh <kernel_name> <HOST1_NAME> <HOST2_NAME> <timestamp / speedup>"
 	- eg1: $ sudo bash eval_32.sh all localhost localhost speedup
 	- eg2: $ sudo bash eval_32.sh bfsDijkstra amd1 amd2 speedup 
 	- eg3: $ sudo bash eval_32.sh mst amd1 amd2 timestamp
 	- On our laptop, the script took around 40 minute to complete.
 
-* To establish the impact of AT-Opt when the programs are run on a single node 32 core machine: "$ sudo ./eval_32_one.sh <kernel_name> <HOST1_NAME> <timestamp or speedup>"
+* To establish the impact of AT-Opt when the programs are run on a single node 32 core machine: "$ sudo ./eval_32_one.sh <kernel_name> <HOST1_NAME> <timestamp / speedup>"
 	- eg1: $ sudo bash eval_32_one.sh all localhost speedup
 
 * To establish the results shown in Figure 14: "$ sudo bash eval_ser_data.sh all". 
